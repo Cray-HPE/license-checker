@@ -1,8 +1,8 @@
 # license-checker
-Validate and fix license headers in source files. Year ranges are supported: if license header refers to copyright year as "\[2021\]",
-it will be converted to "\[2021-2022\]" if run in year 2022.
+Validate and fix license headers in source files. Year ranges are supported: if license header refers to copyright year as `[2021]`,
+it will be converted to `[2021-2022]` if run with `--fix` option in year 2022.
 
-Files which are in unrecognized format are reported, but do not affect final score. Files in recognized format are checked and affect final score,
+Files which are in unrecognized format are reported, but this does not affect final score. Files in recognized format are checked and this affects final score,
 printed as last line (if run without `--fix` option).
 
 ## Quick Start
@@ -38,3 +38,23 @@ Most notable settings, which may require customization, are:
    Patterns in inclusion list must follow [Python fnmatch module syntax](https://docs.python.org/3/library/fnmatch.html), applied against path to
    each individual file, relative to top level scan directory. I.e., use `dist/*` to cover all files in `dist/` folder. Specifying just `dist/` is not
    sufficient.
+
+## Integration with GitHub Workflows
+Add the following to a file named `.github/workflows/license-check.yaml`, to make license checking part of your GitHub workflow:
+```
+name: license-check
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: License Check
+        uses: docker://artifactory.algol60.net/csm-docker/stable/license-checker:latest
+```
