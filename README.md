@@ -1,9 +1,9 @@
 # license-checker
 Validate and fix license headers in source files. Year ranges are supported: if license header refers to copyright year as "\[2021\]",
-it will be convered to "\[2021-2022\]" if run in year 2022.
+it will be converted to "\[2021-2022\]" if run in year 2022.
 
 Files which are in unrecognized format are reported, but do not affect final score. Files in recognized format are checked and affect final score,
-printed as last line (or fixed in place, if fix is required and `--fix` option provided).
+printed as last line (if run without `--fix` option).
 
 ## Quick Start
 
@@ -35,3 +35,6 @@ Most notable settings, which may require customization, are:
    add_exclude:
        - "ignore_this.*"
    ```
+   Patterns in inclusion list must follow [Python fnmatch module syntax](https://docs.python.org/3/library/fnmatch.html), applied against path to
+   each individual file, relative to top level scan directory. I.e., use `dist/*` to cover all files in `dist/` folder. Specifying just `dist/` is not
+   sufficient.
