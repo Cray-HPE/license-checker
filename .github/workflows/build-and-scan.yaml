@@ -31,7 +31,7 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-      - name: build-sign-scan
+      - name: Build, Sign and Scan Image
         uses: Cray-HPE/github-actions/build-sign-scan@main
         with:
           # Only push on main builds
