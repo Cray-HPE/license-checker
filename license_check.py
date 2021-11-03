@@ -81,7 +81,7 @@ class LicenseCheck(object):
                 ")?"
 
     def read_config(self, config_file):
-        logging.info("Parsing config file %s ..." % config_file)
+        logging.info("Parsing config file %s ..." % os.path.realpath(config_file))
         with open(config_file) as f:
             return yaml.load(f, Loader=yaml.SafeLoader)
 
