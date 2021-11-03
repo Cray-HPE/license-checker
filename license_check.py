@@ -48,7 +48,7 @@ class LicenseCheck(object):
 
     def __init__(self, **kwargs):
         self.rootdir = kwargs.get("rootdir", os.path.curdir)
-        logging.info("Scanning from top level directory %s" % self.rootdir)
+        logging.info("Scanning from top level directory %s" % os.path.realpath(self.rootdir))
         self.config = self.read_config(sys.path[0] + os.path.sep + 'license_check.yaml')
         config_override = kwargs.get("config_override")
         if not config_override:
@@ -187,4 +187,10 @@ if __name__ == "__main__":
     license_check = LicenseCheck(rootdir=args.scan_directory, config_override=args.config, add_exclude_cli=args.add_exclude)
     result = license_check.check(fix=args.fix)
     if not args.fix:
-        print("License headers score: %d%%" % (100.0 * len(list(filter(lambda x: x.code == 0, result))) / len(result)))
+        success = len(list(filter(lambda x: x.code == 0, result)))
+        total = len(result)
+        if total > 0:
+            print("License headers score: %d%%" % (100.0 * success / total))
+        else:
+            print("No files were scanned")
+        sys.exit(1 if success < total else 0)
