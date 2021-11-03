@@ -1,0 +1,24 @@
+name: build-sign-scan
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: build-sign-scan
+        uses: Cray-HPE/github-actions/build-sign-scan@main
+        with:
+          # Only push on main builds
+          docker_push: ${{ github.ref == 'refs/heads/main' }}
+          context_path: ""
+          docker_repo: artifactory.algol60.net/csm-docker/stable/${{ github.event.repository.name }}
+          docker_tag: latest
+          artifactory_algol60_token: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
+          cosign_gcp_project_id: ${{ secrets.COSIGN_GCP_PROJECT_ID }}
+          cosign_gcp_sa_key: ${{ secrets.COSIGN_GCP_SA_KEY }}
+          cosign_key: ${{ secrets.COSIGN_KEY }}
+          snyk_token: ${{ secrets.SNYK_TOKEN }}
+          github_sha: $GITHUB_SHA
