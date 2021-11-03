@@ -19,6 +19,10 @@
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
+#
+
+# Definition of comment syntaxes supported. Use shebang_pattern to define potentially multiline inclusion, which
+# must go before license header. For example, shebang line in shell/python scripts, XML declaration in XML files (can be multiline).
 comment_types:
   shell_or_python:
     shebang_pattern: "^#\\![/a-z0-9 ]+\n"
@@ -61,6 +65,7 @@ comment_types:
     insert_after: ""
     line_prefix: "# "
 
+# Recognized filename patterns and corresponding comment types
 file_types:
   "*.sh": shell_or_python
   "*.bash": shell_or_python
@@ -78,6 +83,7 @@ file_types:
   "*.yml": yaml
   LICENSE: plain
 
+# Default exclusion list - override this in .license_check.yaml , if you need to remove some entries
 exclude:
   - '.git/*'
   - 'dist/*'
@@ -92,10 +98,13 @@ exclude:
   - '*.gitignore'
   - '.github/CODEOWNERS'
 
+# Additional exclusion list - override this in .license_check.yaml to add entries to default exclusion list
 add_exclude: []
 
+# Copyright owner which will be injected in plase of [owner] placeholder in license template.
 owner: Hewlett Packard Enterprise Development LP
 
+# License template text
 license_template: |
   MIT License
 
