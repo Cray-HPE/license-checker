@@ -66,12 +66,14 @@ comment_types:
     insert_after: ""
     line_prefix: "# "
 
-# Recognized filename patterns and corresponding comment types
+# Recognized filename patterns and corresponding comment types.
+# Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
 file_types:
   "*.sh": shell_or_python
   "*.bash": shell_or_python
   "*.py": shell_or_python
   "Dockerfile*": docker
+  "*/Dockerfile*": docker
   "*.java": java
   "*.groovy": java
   "*.css": java
@@ -83,8 +85,11 @@ file_types:
   "*.yaml": yaml
   "*.yml": yaml
   LICENSE: plain
+  "Makefile*": docker
+  "*/Makefile*": docker
 
-# Default exclusion list - override this in .license_check.yaml , if you need to remove some entries
+# Default exclusion list - override this in .license_check.yaml, if you need to remove some entries.
+# Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
 exclude:
   - '.git/*'
   - 'dist/*'
@@ -100,7 +105,8 @@ exclude:
   - '*.gitignore'
   - '.github/CODEOWNERS'
 
-# Additional exclusion list - override this in .license_check.yaml to add entries to default exclusion list
+# Additional exclusion list - override this in .license_check.yaml to add entries to default exclusion list.
+# Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
 add_exclude: []
 
 # Copyright owner which will be injected in plase of [owner] placeholder in license template.
