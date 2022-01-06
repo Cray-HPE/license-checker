@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # MIT License
 # 
 # (C) Copyright [2020] Hewlett Packard Enterprise Development LP
@@ -20,4 +22,5 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-set -e
+set -ex
+echo "Hello World!"

@@ -135,3 +135,8 @@ license_template: |
   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
   OTHER DEALINGS IN THE SOFTWARE.
+
+# Additional headers to treat as license header. These are checked in case if main template
+# defined above is not found. In fix mode, these are getting replaced with main template.
+additional_templates:
+- Copyright [year] [owner]

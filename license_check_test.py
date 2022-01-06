@@ -59,6 +59,18 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
+    def testInvalidShell(self):
+        checker = license_check.LicenseCheck(rootdir="tests", config_override="tests/config_no_year.yaml")
+        result = checker.check_file("tests/no_license.sh")
+        self.assertEqual(result.code, 1)
+        self.assertRegex(result.message, "^License is not detected:")
+
+    def testOneLinerShell(self):
+        checker = license_check.LicenseCheck(rootdir="tests", config_override="tests/config_no_year.yaml")
+        result = checker.check_file("tests/one_liner.sh")
+        self.assertEqual(result.code, 1)
+        self.assertRegex(result.message, "^License is detected, but wording is wrong:")
+
     def testValidShellWithDummyLine(self):
         checker = license_check.LicenseCheck(rootdir="tests", config_override="tests/config_no_year.yaml")
         result = checker.check_file("tests/valid_old_year_dummy_line_shebang.sh")
@@ -76,6 +88,12 @@ class LicenseCheckTest(unittest.TestCase):
         result = checker.check_file("tests/valid_old_year.xml")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
+
+    def testOneLinerXml(self):
+        checker = license_check.LicenseCheck(rootdir="tests", config_override="tests/config_no_year.yaml")
+        result = checker.check_file("tests/one_liner.xml")
+        self.assertEqual(result.code, 1)
+        self.assertRegex(result.message, "^License is detected, but wording is wrong:")
 
     def testValidXmlMultilineDeclaration(self):
         checker = license_check.LicenseCheck(rootdir="tests", config_override="tests/config_no_year.yaml")
@@ -109,6 +127,24 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("year"), "%d" % datetime.datetime.now().year)
         os.remove(outfile)
 
+    def testFixOneLinerInXml(self):
+        checker = license_check.LicenseCheck()
+        tempdir = tempfile.gettempdir()
+        outfile_one_liner = tempdir + "/one_liner.xml"
+        outfile_valid = tempdir + "/valid.xml"
+        checker.check_file("tests/one_liner.xml", fix=True, outfile=outfile_one_liner)
+        checker.check_file("tests/valid_old_year.xml", fix=True, outfile=outfile_valid)
+        result = checker.check_file(outfile_one_liner)
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+        # Unlike testAddLicenseToShell, year 2021 should be picked up from existig one-liner, and propagated as range
+        self.assertEqual(result.matcher.group("year"), "2020-%d" % datetime.datetime.now().year)
+        # Assert that fix removed one liner and put full license on place of it
+        with open(outfile_one_liner) as f1, open(outfile_valid) as f2:
+            self.assertEqual(f1.read(), f2.read())
+        os.remove(outfile_one_liner)
+        os.remove(outfile_valid)
+
     def testAddLicenseToShell(self):
         checker = license_check.LicenseCheck()
         outfile = tempfile.gettempdir() + "/no_license.sh"
@@ -118,6 +154,24 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertRegex(result.message, "^License is up to date:")
         self.assertEqual(result.matcher.group("year"), "%d" % datetime.datetime.now().year)
         os.remove(outfile)
+
+    def testFixOneLinerInShell(self):
+        checker = license_check.LicenseCheck()
+        tempdir = tempfile.gettempdir()
+        outfile_one_liner = tempdir + "/one_liner.sh"
+        outfile_valid = tempdir + "/valid.sh"
+        checker.check_file("tests/one_liner.sh", fix=True, outfile=outfile_one_liner)
+        checker.check_file("tests/valid_old_year.sh", fix=True, outfile=outfile_valid)
+        result = checker.check_file(outfile_one_liner)
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+        # Unlike testAddLicenseToShell, year 2021 should be picked up from existig one-liner, and propagated as range
+        self.assertEqual(result.matcher.group("year"), "2020-%d" % datetime.datetime.now().year)
+        # Assert that fix removed one liner and put full license on place of it
+        with open(outfile_one_liner) as f1, open(outfile_valid) as f2:
+            self.assertEqual(f1.read(), f2.read())
+        os.remove(outfile_one_liner)
+        os.remove(outfile_valid)
 
     def testExtendRangeGo(self):
         checker = license_check.LicenseCheck()
@@ -129,6 +183,6 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("year"), "2016-%d" % datetime.datetime.now().year)
         os.remove(outfile)
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.ERROR)
 os.chdir(sys.path[0])
 unittest.main()

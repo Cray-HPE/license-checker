@@ -62,28 +62,39 @@ class LicenseCheck(object):
             self.config["exclude"].extend(self.config["add_exclude"])
         if kwargs.get("add_exclude_cli"):
             self.config["exclude"].extend(kwargs["add_exclude_cli"].split(","))
-        license_pattern = re.escape(self.config["license_template"].strip()) \
-            .replace('\\[year\\]', '(?P<year>([0-9]{4}-)?[0-9]{4})') \
-            .replace('\\[owner\\]', '(?P<owner>[a-zA-Z0-9 \-,]+)') \
-            .split("\n")
+        # Build dict {type_name: (main_pattern, [additional_patterns])}
         self.license_pattern_by_type = {}
         for type_name in self.config["comment_types"]:
             type_def = self.config["comment_types"][type_name]
-            line_prefix = re.sub("(\\\ )+", "\\ *", re.escape(type_def["line_prefix"]))
-            self.license_pattern_by_type[type_name] = \
-                "^(?P<shebang>" + type_def["shebang_pattern"] + ")?" + \
-                "(?P<license>\n*" + \
-                re.escape(type_def["insert_before"]) + \
-                "(" + line_prefix + "\n)*" + \
-                "\n*".join(map(lambda x: line_prefix + ("*" if line_prefix.endswith(" ") and x == "\\" else "") + x + " *", license_pattern)) + "\n*" + \
-                "(" + line_prefix + "\n)*" + \
-                re.escape(type_def["insert_after"]) + \
-                ")?"
+            self.license_pattern_by_type[type_name] = (
+                self.template_to_pattern(self.config["license_template"], type_def),
+                list(map(lambda x: self.template_to_pattern(x, type_def), self.config["additional_templates"]))
+            )
 
     def read_config(self, config_file):
         logging.info("Parsing config file %s ..." % os.path.realpath(config_file))
         with open(config_file) as f:
             return yaml.load(f, Loader=yaml.SafeLoader)
+
+    """
+    Converts template (a string with [year] and [owner] placeholders) to regex pattern, specific to a file type
+    (i.e. taking into account shebang line, comment start/end, line prefixes, etc).
+    """
+    def template_to_pattern(self, template, type_def):
+        license_pattern = re.escape(template.strip()) \
+            .replace('\\[year\\]', '(?P<year>([0-9]{4}-)?[0-9]{4})') \
+            .replace('\\[owner\\]', '(?P<owner>[a-zA-Z0-9 \-,]+)') \
+            .split("\n")
+        line_prefix = re.sub("(\\\ )+", "\\ *", re.escape(type_def["line_prefix"]))
+        return \
+            "^(?P<shebang>" + type_def["shebang_pattern"] + ")?" + \
+            "(?P<license>\n*" + \
+            re.escape(type_def["insert_before"]) + \
+            "(" + line_prefix + "\n)*" + \
+            "\n*".join(map(lambda x: line_prefix + ("*" if line_prefix.endswith(" ") and x == "\\" else "") + x + " *", license_pattern)) + "\n*" + \
+            "(" + line_prefix + "\n)*" + \
+            re.escape(type_def["insert_after"]) + \
+            ")?"
 
     def matches_exclude(self, path):
         for p in self.config["exclude"]:
@@ -107,6 +118,9 @@ class LicenseCheck(object):
                         result.append(self.check_file(filename, fix))
         return result
 
+    """
+    Evaluate license template (replace [year] and [owner] placeholders, add comment start/end and line prefixes)
+    """
     def license_template(self, file_type, matcher=None):
         current_year = datetime.datetime.now().year
         if matcher and matcher.groupdict().get("year"):
@@ -157,8 +171,9 @@ class LicenseCheck(object):
         logging.debug("Identified file type for %s as %s" % (filename, file_type))
         with open(filename) as f:
             content = f.read(4092)
-        logging.debug("Applying pattern:\n%s\nagainst content\n%s" % (self.license_pattern_by_type[file_type], content))
-        result = re.search(self.license_pattern_by_type[file_type], content)
+        pattern = self.license_pattern_by_type[file_type][0]
+        logging.debug("Applying pattern:\n%s\nagainst content\n%s" % (pattern, content))
+        result = re.search(pattern, content)
         if result and result.groupdict().get("license"):
             logging.debug("Discovered groups: %s" % str(result.groupdict()))
             if result.groupdict().get("year") and not result.group("year").endswith(str(datetime.datetime.now().year)):
@@ -167,6 +182,13 @@ class LicenseCheck(object):
                 return self.fix_or_report(1, "License is detected, but copyright owner is not current: %s" % filename, file_type, result, fix, filename, outfile)
             return self.LicenseCheckResult(0, "License is up to date: %s" % filename, result)
         else:
+            logging.debug("Main pattern did not match, trying additional patterns")
+            for pattern in self.license_pattern_by_type[file_type][1]:
+                logging.debug("Applying pattern:\n%s\nagainst content\n%s" % (pattern, content))
+                result = re.search(pattern, content)
+                if result and result.groupdict().get("license"):
+                    return self.fix_or_report(1, "License is detected, but wording is wrong: %s" % filename, file_type, result, fix, filename, outfile)
+                logging.debug("Additional pattern did not match")
             return self.fix_or_report(1, "License is not detected: %s" % filename, file_type, result, fix, filename, outfile)
 
 if __name__ == "__main__":
