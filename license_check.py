@@ -104,18 +104,19 @@ class LicenseCheck(object):
 
     def check(self, fix=False):
         result = []
-        for dirname, _, filenames in os.walk(self.rootdir):
-            if self.matches_exclude(dirname):
-                logging.info("Excluding directory %s as it matches excludes pattern" % dirname)
-            else:
-                for filename in filenames:
-                    filename = dirname + os.path.sep + filename
-                    if os.path.islink(filename):
-                        logging.info("Excluding file %s as it is a link" % filename)
-                    elif self.matches_exclude(filename):
-                        logging.info("Excluding file %s as it matches excludes pattern" % filename)
-                    else:
-                        result.append(self.check_file(filename, fix))
+        for dirname, dirnames, filenames in os.walk(self.rootdir):
+            for dir in dirnames:
+                if self.matches_exclude(dir):
+                    logging.info("Excluding directory %s as it matches excludes pattern" % dir)
+                    dirnames.remove(dir)
+            for filename in filenames:
+                filename = dirname + os.path.sep + filename
+                if os.path.islink(filename):
+                    logging.info("Excluding file %s as it is a link" % filename)
+                elif self.matches_exclude(filename):
+                    logging.info("Excluding file %s as it matches excludes pattern" % filename)
+                else:
+                    result.append(self.check_file(filename, fix))
         return result
 
     """

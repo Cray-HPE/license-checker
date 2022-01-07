@@ -91,10 +91,10 @@ file_types:
 # Default exclusion list - override this in .license_check.yaml, if you need to remove some entries.
 # Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
 exclude:
-  - '.git/*'
-  - 'dist/*'
-  - 'build/*'
-  - 'vendor/*'
+  - '.git'
+  - 'dist'
+  - 'build'
+  - 'vendor'
   - '*.md'
   - '*.lock'
   - '*.json'
