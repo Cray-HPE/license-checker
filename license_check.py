@@ -62,6 +62,8 @@ class LicenseCheck(object):
             self.config["exclude"].extend(self.config["add_exclude"])
         if kwargs.get("add_exclude_cli"):
             self.config["exclude"].extend(kwargs["add_exclude_cli"].split(","))
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logging.debug("Effective configuration:\n" + yaml.safe_dump(self.config))
         # Build dict {type_name: (main_pattern, [additional_patterns])}
         self.license_pattern_by_type = {}
         for type_name in self.config["comment_types"]:
@@ -203,6 +205,8 @@ if __name__ == "__main__":
     if args.log_level == "warn":
         log_level = logging.WARNING
     elif args.log_level == "debug":
+        log_level = logging.DEBUG
+    elif args.log_level is None and os.environ.get("RUNNER_DEBUG") == "1":
         log_level = logging.DEBUG
     else:
         log_level = logging.INFO
