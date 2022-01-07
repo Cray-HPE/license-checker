@@ -93,8 +93,11 @@ file_types:
 exclude:
   - '.git'
   - 'dist'
+  - '*/dist'
   - 'build'
+  - '*/build'
   - 'vendor'
+  - '*/vendor'
   - '*.md'
   - '*.lock'
   - '*.json'
