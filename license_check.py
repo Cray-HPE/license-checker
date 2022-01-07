@@ -110,6 +110,8 @@ class LicenseCheck(object):
     def check(self, fix=False):
         result = []
         for dirname, subdirs, filenames in os.walk(self.rootdir):
+            logging.error("%s %s %s" % (dirname, ",".join(subdirs), ",".join(filenames)))
+        for dirname, subdirs, filenames in os.walk(self.rootdir):
             for subdir in subdirs:
                 if self.matches_exclude(dirname + os.path.sep + subdir):
                     logging.info("Excluding directory %s/%s as it matches excludes pattern" % (dirname, subdir))
