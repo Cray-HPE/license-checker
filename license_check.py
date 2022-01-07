@@ -101,7 +101,10 @@ class LicenseCheck(object):
     def matches_exclude(self, path):
         for p in self.config["exclude"]:
             if fnmatch.fnmatch(os.path.relpath(path), os.path.relpath(p)):
+                logging.debug("Matching %s against %s .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
                 return True
+            else:
+                logging.debug("Matching %s against %s .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
         return False
 
     def check(self, fix=False):

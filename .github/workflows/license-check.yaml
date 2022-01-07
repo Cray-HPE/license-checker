@@ -31,9 +31,6 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
-      - name: Print Environment
-        run: printenv
-
       - name: Checkout
         uses: actions/checkout@v2
 
