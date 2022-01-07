@@ -101,10 +101,10 @@ class LicenseCheck(object):
     def matches_exclude(self, path):
         for p in self.config["exclude"]:
             if fnmatch.fnmatch(os.path.relpath(path), os.path.relpath(p)):
-                logging.debug("Matching %s against %s .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
+                logging.error("Matching %s against %s .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
                 return True
             else:
-                logging.debug("Matching %s against %s .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
+                logging.error("Matching %s against %s .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
         return False
 
     def check(self, fix=False):
@@ -219,7 +219,7 @@ if __name__ == "__main__":
         log_level = logging.DEBUG
     else:
         log_level = logging.INFO
-    logging.basicConfig(format="[%(levelname).4s] %(message)s", level=log_level)
+    logging.basicConfig(format="[%(levelname)] %(message)s", level=log_level)
     license_check = LicenseCheck(rootdir=args.scan_directory, config_override=args.config, add_exclude_cli=args.add_exclude)
     result = license_check.check(fix=args.fix)
     if not args.fix:
