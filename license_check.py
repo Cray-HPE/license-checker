@@ -106,14 +106,14 @@ class LicenseCheck(object):
         result = []
         for dirname, _, filenames in os.walk(self.rootdir):
             if self.matches_exclude(dirname):
-                logging.debug("Excluding directory %s as it matches excludes pattern" % dirname)
+                logging.info("Excluding directory %s as it matches excludes pattern" % dirname)
             else:
                 for filename in filenames:
                     filename = dirname + os.path.sep + filename
                     if os.path.islink(filename):
-                        logging.debug("Excluding file %s as it is a link" % filename)
+                        logging.info("Excluding file %s as it is a link" % filename)
                     elif self.matches_exclude(filename):
-                        logging.debug("Excluding file %s as it matches excludes pattern" % filename)
+                        logging.info("Excluding file %s as it matches excludes pattern" % filename)
                     else:
                         result.append(self.check_file(filename, fix))
         return result
