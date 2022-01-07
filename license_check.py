@@ -83,7 +83,7 @@ class LicenseCheck(object):
     def template_to_pattern(self, template, type_def):
         license_pattern = re.escape(template.strip()) \
             .replace('\\[year\\]', '(?P<year>([0-9]{4}-)?[0-9]{4})') \
-            .replace('\\[owner\\]', '(?P<owner>[a-zA-Z0-9 \-,]+)') \
+            .replace('\\[owner\\]', '(?P<owner>[a-zA-Z0-9 \-,/]+)') \
             .split("\n")
         line_prefix = re.sub("(\\\ )+", "\\ *", re.escape(type_def["line_prefix"]))
         return \
