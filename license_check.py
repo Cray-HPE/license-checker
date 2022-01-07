@@ -219,7 +219,7 @@ if __name__ == "__main__":
         log_level = logging.DEBUG
     else:
         log_level = logging.INFO
-    logging.basicConfig(format="[%(levelname)] %(message)s", level=log_level)
+    logging.basicConfig(format="[%(levelname)s] %(message)s", level=log_level)
     license_check = LicenseCheck(rootdir=args.scan_directory, config_override=args.config, add_exclude_cli=args.add_exclude)
     result = license_check.check(fix=args.fix)
     if not args.fix:
