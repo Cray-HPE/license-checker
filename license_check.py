@@ -111,7 +111,7 @@ class LicenseCheck(object):
         result = []
         for dirname, subdirs, filenames in os.walk(self.rootdir):
             logging.error("Before filtering: %s %s %s" % (dirname, ",".join(subdirs), ",".join(filenames)))
-            for subdir in subdirs:
+            for subdir in subdirs.copy():
                 if self.matches_exclude(dirname + os.path.sep + subdir):
                     logging.error("Excluding directory %s/%s as it matches excludes pattern" % (dirname, subdir))
                     subdirs.remove(subdir)
