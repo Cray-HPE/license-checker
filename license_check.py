@@ -101,23 +101,16 @@ class LicenseCheck(object):
     def matches_exclude(self, path):
         for p in self.config["exclude"]:
             if fnmatch.fnmatch(os.path.relpath(path), os.path.relpath(p)):
-                logging.error("Matching %s against %s .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
+                logging.debug("Matching %s against %s .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
                 return True
             else:
-                logging.error("Matching %s against %s .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
+                logging.debug("Matching %s against %s .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
         return False
 
     def check(self, fix=False):
         result = []
         for dirname, subdirs, filenames in os.walk(self.rootdir):
-            logging.error("Before filtering: %s %s %s" % (dirname, ",".join(subdirs), ",".join(filenames)))
             for subdir in subdirs.copy():
-                if self.matches_exclude(dirname + os.path.sep + subdir):
-                    logging.error("Excluding directory %s/%s as it matches excludes pattern" % (dirname, subdir))
-                    subdirs.remove(subdir)
-            logging.error("After filtering: %s %s %s" % (dirname, ",".join(subdirs), ",".join(filenames)))
-        for dirname, subdirs, filenames in os.walk(self.rootdir):
-            for subdir in subdirs:
                 if self.matches_exclude(dirname + os.path.sep + subdir):
                     logging.info("Excluding directory %s/%s as it matches excludes pattern" % (dirname, subdir))
                     subdirs.remove(subdir)
