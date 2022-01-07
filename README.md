@@ -36,8 +36,9 @@ Most notable settings, which may require customization, are:
        - "ignore_this.*"
    ```
    Patterns in inclusion list must follow [Python fnmatch module syntax](https://docs.python.org/3/library/fnmatch.html), applied against path to
-   each individual file, relative to top level scan directory. I.e., use `dist/*` to cover all files in `dist/` folder. Specifying just `dist/` is not
-   sufficient.
+   each individual file, relative to top level scan directory. Directories, matching exclusion pattern, are not descended into. Matching is performed for
+   full file/directory path. I.e., use `dist` to exclude entire `dist` folder, located in scan root. Use another entry `*/dist` to exclude all folders
+   named `dist`, located deeper in file tree.
 
 ## Integration with GitHub Workflows
 Add the following to a file named `.github/workflows/license-check.yaml`, to make license checking part of your GitHub workflow:
