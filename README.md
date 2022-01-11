@@ -1,6 +1,8 @@
 # license-checker
 Validate and fix license headers in source files. Year ranges are supported: if license header refers to copyright year as `[2021]`,
-it will be converted to `[2021-2022]` if run with `--fix` option in year 2022.
+it will be converted to `[2021-2022]` if run with `--fix` option in year 2022. If license header is completely missed from the file, it will be
+added with copyright year `[2022]`. Use `--start-year 2021` option to override this behaivor and use copyright year range `[2021-2022]` for files, which
+had completely missed license header before.
 
 Files which are in unrecognized format are reported, but this does not affect final score. Files in recognized format are checked and this affects final score,
 printed as last line (if run without `--fix` option).
@@ -15,6 +17,11 @@ $ docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-do
 Run this to fix license headers in all recognized files in current directory:
 ```
 $ docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-docker/stable/license-checker --fix
+```
+
+Run this to fix license headers in all recognized files in current directory, pushing start of copyright year range back to year 2021:
+```
+$ docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-docker/stable/license-checker --fix --start-year 2021
 ```
 
 ## Customizations
