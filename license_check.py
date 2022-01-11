@@ -152,7 +152,7 @@ class LicenseCheck(object):
         license_text = self.config["license_template"].strip()
         if type_def["line_prefix"]:
             license_text = "\n" + license_text + "\n"
-            license_text = "\n".join(map(lambda x: (type_def["line_prefix"] + x).strip(), license_text.split("\n")))
+            license_text = "\n".join(map(lambda x: (type_def["line_prefix"] + x).rstrip(), license_text.split("\n")))
         return type_def["insert_before"] + \
             license_text.replace("[owner]", self.config["owner"]).replace("[year]", year_replace) + "\n" + \
             type_def["insert_after"]

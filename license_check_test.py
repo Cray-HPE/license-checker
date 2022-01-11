@@ -127,6 +127,16 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("year"), "%d" % datetime.datetime.now().year)
         os.remove(outfile)
 
+    def testAddLicenseToJava(self):
+        checker = license_check.LicenseCheck(rootdir="tests")
+        outfile = tempfile.gettempdir() + "/no_license.java"
+        checker.check_file("tests/no_license.java", fix=True, outfile=outfile)
+        result = checker.check_file(outfile)
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+        self.assertEqual(result.matcher.group("year"), "%d" % datetime.datetime.now().year)
+        os.remove(outfile)
+
     def testFixOneLinerInXml(self):
         checker = license_check.LicenseCheck()
         tempdir = tempfile.gettempdir()
