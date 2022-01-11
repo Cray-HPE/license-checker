@@ -128,15 +128,22 @@ class LicenseCheck(object):
     Evaluate license template (replace [year] and [owner] placeholders, add comment start/end and line prefixes)
     """
     def license_template(self, file_type, matcher=None):
-        current_year = datetime.datetime.now().year
+        start_year = self.config.get("start_year")
+        end_year = self.config.get("end_year")
         if matcher and matcher.groupdict().get("year"):
             year_range = matcher.group("year").split("-")
-            if int(year_range[0]) < current_year:
-                year_replace = "%s-%d" % (year_range[0], current_year)
+            if int(year_range[0]) < end_year:
+                # There is a matching group, wich defines a range, and start year is before end year
+                year_replace = "%s-%d" % (year_range[0], end_year)
             else:
-                year_replace = str(current_year)
+                # Matching group consists of single end year - leave it be
+                year_replace = str(end_year)
         else:
-            year_replace = str(current_year)
+            # No year matching group - new header being added
+            if start_year < end_year:
+                year_replace = "%d-%d" % (start_year, end_year)
+            else:
+                year_replace = str(end_year)
         type_def = self.config["comment_types"][file_type]
         license_text = self.config["license_template"].strip()
         if type_def["line_prefix"]:
@@ -182,7 +189,7 @@ class LicenseCheck(object):
         result = re.search(pattern, content)
         if result and result.groupdict().get("license"):
             logging.debug("Discovered groups: %s" % str(result.groupdict()))
-            if result.groupdict().get("year") and not result.group("year").endswith(str(datetime.datetime.now().year)):
+            if result.groupdict().get("year") and not result.group("year").endswith(str(self.config["end_year"])):
                 return self.fix_or_report(1, "License is detected, but copyright year is not up to date: %s" % filename, file_type, result, fix, filename, outfile)
             if result.groupdict().get("owner") and result.group("owner") != self.config["owner"]:
                 return self.fix_or_report(1, "License is detected, but copyright owner is not current: %s" % filename, file_type, result, fix, filename, outfile)
@@ -198,11 +205,14 @@ class LicenseCheck(object):
             return self.fix_or_report(1, "License is not detected: %s" % filename, file_type, result, fix, filename, outfile)
 
 if __name__ == "__main__":
+    current_year = datetime.datetime.now().year
     parser = argparse.ArgumentParser(description='Check or fix license header in source files, with year range support')
     parser.add_argument('--fix', action='store_true', help='fix headers in source files in target directory')
     parser.add_argument('--config', metavar='config_file', help='optional config file, defaults to <scan_directory>/.license_check.yaml')
     parser.add_argument('--log-level', choices=["debug", "info", "warn"], help='log level, defaults to "info"')
-    parser.add_argument('--add-exclude', metavar='add_exclude', help='additional filename patterns, comma-separated')
+    parser.add_argument('--add-exclude', metavar='add_exclude', help='additional filename exclusion patterns, comma-separated')
+    parser.add_argument('--start-year', metavar='start_year', type=int, default=current_year, help='start year to use when new header is added (defaults to current year)')
+    parser.add_argument('--end-year', metavar='end_year', type=int, default=current_year, help='end year to use (defaults to current year)')
     parser.add_argument('scan_directory', nargs='?', default=os.path.curdir, help='top level directory to scan (defaults to current directory)')
     args = parser.parse_args()
     if args.log_level == "warn":
@@ -214,7 +224,8 @@ if __name__ == "__main__":
     else:
         log_level = logging.INFO
     logging.basicConfig(format="[%(levelname)s] %(message)s", level=log_level)
-    license_check = LicenseCheck(rootdir=args.scan_directory, config_override=args.config, add_exclude_cli=args.add_exclude)
+    license_check = LicenseCheck(rootdir=args.scan_directory, config_override=args.config, add_exclude_cli=args.add_exclude,
+        start_year=args.start_year, end_year=args.end_year)
     result = license_check.check(fix=args.fix)
     if not args.fix:
         success = len(list(filter(lambda x: x.code == 0, result)))
