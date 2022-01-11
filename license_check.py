@@ -62,6 +62,10 @@ class LicenseCheck(object):
             self.config["exclude"].extend(self.config["add_exclude"])
         if kwargs.get("add_exclude_cli"):
             self.config["exclude"].extend(kwargs["add_exclude_cli"].split(","))
+        # start_year and end_year may be come as None from argparse
+        current_year = datetime.datetime.now().year
+        self.config["start_year"] = self.config["start_year"] if self.config.get("start_year") else current_year
+        self.config["end_year"] = self.config["end_year"] if self.config.get("end_year") else current_year
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logging.debug("Effective configuration:\n" + yaml.safe_dump(self.config))
         # Build dict {type_name: (main_pattern, [additional_patterns])}
@@ -205,14 +209,13 @@ class LicenseCheck(object):
             return self.fix_or_report(1, "License is not detected: %s" % filename, file_type, result, fix, filename, outfile)
 
 if __name__ == "__main__":
-    current_year = datetime.datetime.now().year
     parser = argparse.ArgumentParser(description='Check or fix license header in source files, with year range support')
     parser.add_argument('--fix', action='store_true', help='fix headers in source files in target directory')
     parser.add_argument('--config', metavar='config_file', help='optional config file, defaults to <scan_directory>/.license_check.yaml')
     parser.add_argument('--log-level', choices=["debug", "info", "warn"], help='log level, defaults to "info"')
     parser.add_argument('--add-exclude', metavar='add_exclude', help='additional filename exclusion patterns, comma-separated')
-    parser.add_argument('--start-year', metavar='start_year', type=int, default=current_year, help='start year to use when new header is added (defaults to current year)')
-    parser.add_argument('--end-year', metavar='end_year', type=int, default=current_year, help='end year to use (defaults to current year)')
+    parser.add_argument('--start-year', metavar='start_year', type=int, help='start year to use when new header is added (defaults to current year)')
+    parser.add_argument('--end-year', metavar='end_year', type=int, help='end year to use (defaults to current year)')
     parser.add_argument('scan_directory', nargs='?', default=os.path.curdir, help='top level directory to scan (defaults to current directory)')
     args = parser.parse_args()
     if args.log_level == "warn":
