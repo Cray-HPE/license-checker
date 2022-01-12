@@ -88,7 +88,7 @@ class LicenseCheck(object):
     """
     def template_to_pattern(self, template, type_def):
         license_pattern = re.escape(template.strip()) \
-            .replace('\\[year\\]', '(?P<year>([0-9]{4}-)?[0-9]{4})') \
+            .replace('\\[year\\]', '\[?(?P<start_year>[0-9\- ,]*)(?P<end_year>[0-9]{4})\]?') \
             .replace('\\[owner\\]', '(?P<owner>[a-zA-Z0-9 \-,/]+)') \
             .split("\n")
         line_prefix = re.sub("(\\\ )+", "\\ *", re.escape(type_def["line_prefix"]))
@@ -134,19 +134,32 @@ class LicenseCheck(object):
     def license_template(self, file_type, matcher=None):
         start_year = self.config.get("start_year")
         end_year = self.config.get("end_year")
-        if matcher and matcher.groupdict().get("year"):
-            year_range = matcher.group("year").split("-")
-            if int(year_range[0]) < end_year:
-                # There is a matching group, wich defines a range, and start year is before end year
-                year_replace = "%s-%d" % (year_range[0], end_year)
+        if matcher and matcher.groupdict().get("end_year"):
+            start_year_current = matcher.groupdict().get("start_year")
+            end_year_current = int(matcher.groupdict().get("end_year"))
+            group_current = "%s%d" % (start_year_current, end_year_current)
+            if end_year_current == end_year - 1:
+                # End year is 1 year behind
+                if start_year_current.endswith("-"):
+                    # "2016, 2019-2021" > "2016, 2019-2022"
+                    year_replace = "%s%d" % (start_year_current, end_year)
+                else:
+                    # "2016, 2021" > "2016, 2021-2022"; "2021" > "2021-2022"
+                    year_replace = "%s-%d" % (group_current, end_year)
+            elif end_year_current < end_year - 1:
+                # End year is more then 1 year behind - add new end year separated with comma
+                # "2016, 2018-2020" > "2016, 2018-2020, 2022"
+                year_replace = "%s, %d" % (group_current, end_year)
             else:
-                # Matching group consists of single end year - leave it be
-                year_replace = str(end_year)
+                # End year is already up to date or in the future, no change
+                year_replace = group_current
         else:
             # No year matching group - new header being added
             if start_year < end_year:
+                # Add year range, in case if back-dated fix requested by providing start_year in the past
                 year_replace = "%d-%d" % (start_year, end_year)
             else:
+                # Add single year as part of new license header
                 year_replace = str(end_year)
         type_def = self.config["comment_types"][file_type]
         license_text = self.config["license_template"].strip()
@@ -193,7 +206,7 @@ class LicenseCheck(object):
         result = re.search(pattern, content)
         if result and result.groupdict().get("license"):
             logging.debug("Discovered groups: %s" % str(result.groupdict()))
-            if result.groupdict().get("year") and not result.group("year").endswith(str(self.config["end_year"])):
+            if result.groupdict().get("end_year") and result.group("end_year") != str(self.config["end_year"]):
                 return self.fix_or_report(1, "License is detected, but copyright year is not up to date: %s" % filename, file_type, result, fix, filename, outfile)
             if result.groupdict().get("owner") and result.group("owner") != self.config["owner"]:
                 return self.fix_or_report(1, "License is detected, but copyright owner is not current: %s" % filename, file_type, result, fix, filename, outfile)
