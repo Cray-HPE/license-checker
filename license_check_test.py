@@ -22,7 +22,6 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-import datetime
 import unittest
 import license_check
 import sys
@@ -196,7 +195,7 @@ class LicenseCheckTest(unittest.TestCase):
         os.remove(outfile_one_liner)
         os.remove(outfile_valid)
 
-    # Test that "2016-2020" is converted to "2016-2021" in year 2021
+    # Test that "2014, 2016-2020" is converted to "2014, 2016-2021" in year 2021
     def testExtendRangeGo(self):
         checker = license_check.LicenseCheck(end_year=2021)
         outfile = tempfile.gettempdir() + "/valid_old_range.go"
@@ -204,11 +203,11 @@ class LicenseCheckTest(unittest.TestCase):
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
-        self.assertEqual(result.matcher.group("start_year"), "2016-")
+        self.assertEqual(result.matcher.group("start_year"), "2014, 2016-")
         self.assertEqual(result.matcher.group("end_year"), "2021")
         os.remove(outfile)
 
-    # Test that "2016-2020" is converted to "2016-2020, 2022" in year 2022
+    # Test that "2014, 2016-2020" is converted to "2014, 2016-2020, 2022" in year 2022
     def testAddToRangeGo(self):
         checker = license_check.LicenseCheck(end_year=2022)
         outfile = tempfile.gettempdir() + "/valid_old_range.go"
@@ -216,8 +215,20 @@ class LicenseCheckTest(unittest.TestCase):
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
-        self.assertEqual(result.matcher.group("start_year"), "2016-2020, ")
+        self.assertEqual(result.matcher.group("start_year"), "2014, 2016-2020, ")
         self.assertEqual(result.matcher.group("end_year"), "2022")
+        os.remove(outfile)
+
+    # Test that "2014, 2016-2020" is converted to "2014, 2016-2019" in year 2019
+    def testFixFutureYearGo(self):
+        checker = license_check.LicenseCheck(end_year=2019)
+        outfile = tempfile.gettempdir() + "/valid_old_range.go"
+        checker.check_file("tests/valid_old_range.go", fix=True, outfile=outfile)
+        result = checker.check_file(outfile)
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+        self.assertEqual(result.matcher.group("start_year"), "2014, 2016-")
+        self.assertEqual(result.matcher.group("end_year"), "2019")
         os.remove(outfile)
 
 logging.basicConfig(level=logging.ERROR)

@@ -151,8 +151,8 @@ class LicenseCheck(object):
                 # "2016, 2018-2020" > "2016, 2018-2020, 2022"
                 year_replace = "%s, %d" % (group_current, end_year)
             else:
-                # End year is already up to date or in the future, no change
-                year_replace = group_current
+                # End year is already up to date or in the future, replacing it with end_year
+                year_replace = "%s%d" % (start_year_current, end_year)
         else:
             # No year matching group - new header being added
             if start_year < end_year:
