@@ -156,7 +156,7 @@ class LicenseCheckTest(unittest.TestCase):
         result = checker.check_file(outfile_one_liner)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
-        # Unlike testAddLicenseToShell, year 2020 should be picked up from existig one-liner
+        # Unlike testAddLicenseToShell, year 2020 should be picked up from existing one-liner
         self.assertEqual(result.matcher.group("start_year"), "2020, ")
         self.assertEqual(result.matcher.group("end_year"), "2022")
         # Assert that fix removed one liner and put full license on place of it
@@ -186,7 +186,7 @@ class LicenseCheckTest(unittest.TestCase):
         result = checker.check_file(outfile_one_liner)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
-        # Unlike testAddLicenseToShell, year 2020 should be picked up from existig one-liner, and propagated as range
+        # Unlike testAddLicenseToShell, year 2020 should be picked up from existing one-liner, and propagated as range
         self.assertEqual(result.matcher.group("start_year"), "2020-")
         self.assertEqual(result.matcher.group("end_year"), "2021")
         # Assert that fix removed one liner and put full license on place of it

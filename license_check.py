@@ -171,8 +171,8 @@ class LicenseCheck(object):
             type_def["insert_after"]
 
     def fix_or_report(self, code, message, file_type, matcher, fix, filename, outfile):
-        if code == 0 or not fix:
-            return self.LicenseCheckResult(code, message)
+        if not fix:
+            return self.LicenseCheckResult(code, message, matcher)
         logging.info("Fixing file %s ..." % filename)
         new_content = ""
         pos = 0
@@ -210,7 +210,7 @@ class LicenseCheck(object):
                 return self.fix_or_report(1, "License is detected, but copyright year is not up to date: %s" % filename, file_type, result, fix, filename, outfile)
             if result.groupdict().get("owner") and result.group("owner") != self.config["owner"]:
                 return self.fix_or_report(1, "License is detected, but copyright owner is not current: %s" % filename, file_type, result, fix, filename, outfile)
-            return self.LicenseCheckResult(0, "License is up to date: %s" % filename, result)
+            return self.fix_or_report(0, "License is up to date: %s" % filename, file_type, result, fix, filename, outfile)
         else:
             logging.debug("Main pattern did not match, trying additional patterns")
             for pattern in self.license_pattern_by_type[file_type][1]:
