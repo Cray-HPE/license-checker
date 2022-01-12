@@ -23,6 +23,15 @@ Run this to fix license headers in all recognized files in current directory, pu
 ```
 $ docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-docker/stable/license-checker --fix --start-year 2021
 ```
+Alternatively, if you don't want to run docker, you can run license-checker Python script. You will need standard Python3 distro, plus PyYAML module installed. Clone license-checker repo. If run without parameters, license-checker script will perform read-only checking in current directory.
+```
+$ git clone https://github.com/Cray-HPE/license-checker.git
+$ cd /path/to/my-repo
+$ /path/to/license_check.py
+...
+$ /path/to/license_check.py --fix
+...
+```
 
 ## Customizations
 Customizations are available through `.license_check.yaml` file, placed into top level scan directory (which defaults to current directory).
