@@ -47,12 +47,10 @@ class LicenseCheck(object):
             return "[%d, %s]" % (self.code, self.message)
 
     def __init__(self, **kwargs):
-        self.rootdir = kwargs.get("rootdir", os.path.curdir)
-        logging.info("Scanning from top level directory %s" % os.path.realpath(self.rootdir))
         self.config = self.read_config(sys.path[0] + os.path.sep + 'license_check.yaml')
         config_override = kwargs.get("config_override")
         if not config_override:
-            config_override = self.rootdir + os.path.sep + ".license_check.yaml"
+            config_override = os.getcwd() + os.path.sep + ".license_check.yaml"
         if os.path.exists(config_override):
             self.config.update(self.read_config(config_override))
         else:
@@ -111,21 +109,33 @@ class LicenseCheck(object):
                 logging.debug("Matching %s against %s .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
         return False
 
-    def check(self, fix=False):
+    def check(self, scan_targets, fix=False):
         result = []
-        for dirname, subdirs, filenames in os.walk(self.rootdir):
-            for subdir in subdirs.copy():
-                if self.matches_exclude(dirname + os.path.sep + subdir):
-                    logging.info("Excluding directory %s/%s as it matches excludes pattern" % (dirname, subdir))
-                    subdirs.remove(subdir)
-            for filename in filenames:
-                filename = dirname + os.path.sep + filename
-                if os.path.islink(filename):
-                    logging.info("Excluding file %s as it is a link" % filename)
-                elif self.matches_exclude(filename):
-                    logging.info("Excluding file %s as it matches excludes pattern" % filename)
-                else:
-                    result.append(self.check_file(filename, fix))
+        if isinstance(scan_targets, str):
+            scan_targets = [scan_targets]
+        for scan_target in scan_targets:
+            if self.matches_exclude(scan_target):
+                logging.info("Excluding file or directory %s as it matches excludes pattern" % scan_target)
+            elif os.path.isdir(scan_target):
+                logging.info("Scanning directory %s" % scan_target)
+                for dirname, subdirs, filenames in os.walk(scan_target):
+                    for subdir in subdirs.copy():
+                        if self.matches_exclude(dirname + os.path.sep + subdir):
+                            logging.info("Excluding directory %s/%s as it matches excludes pattern" % (dirname, subdir))
+                            subdirs.remove(subdir)
+                    for filename in filenames:
+                        filename = dirname + os.path.sep + filename
+                        if os.path.islink(filename):
+                            logging.info("Excluding file %s as it is a link" % filename)
+                        elif self.matches_exclude(filename):
+                            logging.info("Excluding file %s as it matches excludes pattern" % filename)
+                        else:
+                            result.append(self.check_file(filename, fix))
+            elif os.path.isfile(scan_target):
+                logging.info("Scanning file %s" % scan_target)
+                result.append(self.check_file(scan_target, fix))
+            else:
+                logging.warning("Can't scan %s - not regular file or directory" % scan_target)
         return result
 
     """
@@ -229,7 +239,7 @@ if __name__ == "__main__":
     parser.add_argument('--add-exclude', metavar='add_exclude', help='additional filename exclusion patterns, comma-separated')
     parser.add_argument('--start-year', metavar='start_year', type=int, help='start year to use when new header is added (defaults to current year)')
     parser.add_argument('--end-year', metavar='end_year', type=int, help='end year to use (defaults to current year)')
-    parser.add_argument('scan_directory', nargs='?', default=os.path.curdir, help='top level directory to scan (defaults to current directory)')
+    parser.add_argument('scan_target', nargs='*', default=os.path.curdir, help='directories and individual files to scan (defaults to current directory)')
     args = parser.parse_args()
     if args.log_level == "warn":
         log_level = logging.WARNING
@@ -240,9 +250,9 @@ if __name__ == "__main__":
     else:
         log_level = logging.INFO
     logging.basicConfig(format="[%(levelname)s] %(message)s", level=log_level)
-    license_check = LicenseCheck(rootdir=args.scan_directory, config_override=args.config, add_exclude_cli=args.add_exclude,
+    license_check = LicenseCheck(config_override=args.config, add_exclude_cli=args.add_exclude,
         start_year=args.start_year, end_year=args.end_year)
-    result = license_check.check(fix=args.fix)
+    result = license_check.check(args.scan_target, fix=args.fix)
     if not args.fix:
         success = len(list(filter(lambda x: x.code == 0, result)))
         total = len(result)

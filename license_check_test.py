@@ -31,96 +31,96 @@ import os
 
 class LicenseCheckTest(unittest.TestCase):
     def testExcludeFolder(self):
-        checker = license_check.LicenseCheck(rootdir="tests", exclude=["tests/*"])
+        checker = license_check.LicenseCheck(exclude=["tests"], add_exclude=[])
         result = checker.check("tests")
         self.assertEqual(result, [])
 
     def testExcludeFile(self):
-        checker = license_check.LicenseCheck(rootdir="tests/exclude", exclude=["*/exclude.*"])
-        result = checker.check()
-        self.assertEqual(result, [])
+       checker = license_check.LicenseCheck(exclude=["tests/*.*"], add_exclude=[])
+       result = checker.check("tests")
+       self.assertEqual(result, [])
 
     def testValidYaml(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year.yaml")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testValidYamlYearRangeList(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year_range_list.yaml")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testValidYamlWithDummyLine(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year_dummy_line.yaml")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testValidShell(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year.sh")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testValidShellEmptyLine(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year_empty_line.sh")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testInvalidShell(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/no_license.sh")
         self.assertEqual(result.code, 1)
         self.assertRegex(result.message, "^License is not detected:")
 
     def testOneLinerShell(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/one_liner.sh")
         self.assertEqual(result.code, 1)
         self.assertRegex(result.message, "^License is detected, but wording is wrong:")
 
     def testValidShellWithDummyLine(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year_dummy_line_shebang.sh")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testValidShellWithEmptyLine(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year_empty_line_shebang.sh")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testValidXml(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year.xml")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testOneLinerXml(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/one_liner.xml")
         self.assertEqual(result.code, 1)
         self.assertRegex(result.message, "^License is detected, but wording is wrong:")
 
     def testValidXmlMultilineDeclaration(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year_multiline_declaration.xml")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     def testValidJava(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2020)
         result = checker.check_file("tests/valid_old_year.java")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
     # [2020] > 2020-2021
     def testConvertSingleYearToRangeJava(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2021)
+        checker = license_check.LicenseCheck(end_year=2021)
         outfile = tempfile.gettempdir() + "/valid_old_year.java"
         checker.check_file("tests/valid_old_year.java", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
@@ -131,7 +131,7 @@ class LicenseCheckTest(unittest.TestCase):
         os.remove(outfile)
 
     def testAddLicenseToXml(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2021)
+        checker = license_check.LicenseCheck(end_year=2021)
         outfile = tempfile.gettempdir() + "/no_license.xml"
         checker.check_file("tests/no_license.xml", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
@@ -142,7 +142,7 @@ class LicenseCheckTest(unittest.TestCase):
         os.remove(outfile)
 
     def testAddLicenseToJava(self):
-        checker = license_check.LicenseCheck(rootdir="tests", end_year=2021)
+        checker = license_check.LicenseCheck(end_year=2021)
         outfile = tempfile.gettempdir() + "/no_license.java"
         checker.check_file("tests/no_license.java", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
