@@ -97,7 +97,7 @@ class LicenseCheck(object):
             "(?P<license>\n*" + \
             re.escape(type_def["insert_before"]) + \
             "(" + line_prefix + "\n)*" + \
-            "\n*".join(map(lambda x: line_prefix + ("*" if line_prefix.endswith(" ") and x == "\\" else "") + x + " *", license_pattern)) + "\n*" + \
+            "\n*".join(map(lambda x:  (("(" + line_prefix + ")?") if x == "\\" else line_prefix) + x + " *", license_pattern)) + "\n*" + \
             "(" + line_prefix + "\n)*" + \
             re.escape(type_def["insert_after"]) + \
             ")?"

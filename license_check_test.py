@@ -64,6 +64,12 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
+    def testValidShellEmptyLine(self):
+        checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
+        result = checker.check_file("tests/valid_old_year_empty_line.sh")
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+
     def testInvalidShell(self):
         checker = license_check.LicenseCheck(rootdir="tests", end_year=2020)
         result = checker.check_file("tests/no_license.sh")
