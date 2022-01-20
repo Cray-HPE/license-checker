@@ -121,7 +121,7 @@ class LicenseCheckTest(unittest.TestCase):
     # [2020] > 2020-2021
     def testConvertSingleYearToRangeJava(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.gettempdir() + "/valid_old_year.java"
+        outfile = tempfile.mkdtemp() + "/valid_old_year.java"
         checker.check_file("tests/valid_old_year.java", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -132,7 +132,7 @@ class LicenseCheckTest(unittest.TestCase):
 
     def testAddLicenseToXml(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.gettempdir() + "/no_license.xml"
+        outfile = tempfile.mkdtemp() + "/no_license.xml"
         checker.check_file("tests/no_license.xml", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -143,7 +143,7 @@ class LicenseCheckTest(unittest.TestCase):
 
     def testAddLicenseToJava(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.gettempdir() + "/no_license.java"
+        outfile = tempfile.mkdtemp() + "/no_license.java"
         checker.check_file("tests/no_license.java", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -154,7 +154,7 @@ class LicenseCheckTest(unittest.TestCase):
 
     def testFixOneLinerInXml(self):
         checker = license_check.LicenseCheck(end_year=2022)
-        tempdir = tempfile.gettempdir()
+        tempdir = tempfile.mkdtemp()
         outfile_one_liner = tempdir + "/one_liner.xml"
         outfile_valid = tempdir + "/valid.xml"
         checker.check_file("tests/one_liner.xml", fix=True, outfile=outfile_one_liner)
@@ -173,7 +173,7 @@ class LicenseCheckTest(unittest.TestCase):
 
     def testAddLicenseToShell(self):
         checker = license_check.LicenseCheck(start_year=2019, end_year=2021)
-        outfile = tempfile.gettempdir() + "/no_license.sh"
+        outfile = tempfile.mkdtemp() + "/no_license.sh"
         checker.check_file("tests/no_license.sh", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -184,7 +184,7 @@ class LicenseCheckTest(unittest.TestCase):
 
     def testFixOneLinerInShell(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        tempdir = tempfile.gettempdir()
+        tempdir = tempfile.mkdtemp()
         outfile_one_liner = tempdir + "/one_liner.sh"
         outfile_valid = tempdir + "/valid.sh"
         checker.check_file("tests/one_liner.sh", fix=True, outfile=outfile_one_liner)
@@ -204,7 +204,7 @@ class LicenseCheckTest(unittest.TestCase):
     # Test that "2014, 2016-2020" is converted to "2014, 2016-2021" in year 2021
     def testExtendRangeGo(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.gettempdir() + "/valid_old_range.go"
+        outfile = tempfile.mkdtemp() + "/valid_old_range.go"
         checker.check_file("tests/valid_old_range.go", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -216,7 +216,7 @@ class LicenseCheckTest(unittest.TestCase):
     # Test that "2014, 2016-2020" is converted to "2014, 2016-2020, 2022" in year 2022
     def testAddToRangeGo(self):
         checker = license_check.LicenseCheck(end_year=2022)
-        outfile = tempfile.gettempdir() + "/valid_old_range.go"
+        outfile = tempfile.mkdtemp() + "/valid_old_range.go"
         checker.check_file("tests/valid_old_range.go", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -228,7 +228,7 @@ class LicenseCheckTest(unittest.TestCase):
     # Test that "2014, 2016-2020" is converted to "2014, 2016-2019" in year 2019
     def testFixFutureYearGo(self):
         checker = license_check.LicenseCheck(end_year=2019)
-        outfile = tempfile.gettempdir() + "/valid_old_range.go"
+        outfile = tempfile.mkdtemp() + "/valid_old_range.go"
         checker.check_file("tests/valid_old_range.go", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -236,6 +236,48 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("start_year"), "2014, 2016-")
         self.assertEqual(result.matcher.group("end_year"), "2019")
         os.remove(outfile)
+
+    def testValidGoTemplate(self):
+        checker = license_check.LicenseCheck(end_year=2022)
+        result = checker.check_file("tests/templates/go_template_valid.yaml")
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+
+    def testAddLicenseToGoTemplate(self):
+        checker = license_check.LicenseCheck(end_year=2022)
+        tempdir = tempfile.mkdtemp()
+        # outfile must be in templates/ folder, for yaml to be recognized as go_template    
+        os.mkdir(tempdir + "/templates")
+        outfile = tempdir + "/templates/go_template_no_license.yaml"
+        checker.check_file("tests/templates/go_template_no_license.yaml", fix=True, outfile=outfile)
+        result = checker.check_file(outfile)
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+        self.assertEqual(result.matcher.group("start_year"), "")
+        self.assertEqual(result.matcher.group("end_year"), "2022")
+        os.remove(outfile)
+
+    def testFixOneLinerInGoTemplate(self):
+        checker = license_check.LicenseCheck(end_year=2022)
+        tempdir = tempfile.mkdtemp()
+        # outfile must be in templates/ folder, for yaml to be recognized as go_template    
+        os.mkdir(tempdir + "/templates")
+        outfile_one_liner = tempdir + "/templates/go_template_one_liner.yaml"
+        outfile_valid = tempdir + "/templates/go_template_valid.yaml"
+        checker.check_file("tests/templates/go_template_one_liner.yaml", fix=True, outfile=outfile_one_liner)
+        checker.check_file("tests/templates/go_template_valid.yaml", fix=True, outfile=outfile_valid)
+        result = checker.check_file(outfile_one_liner)
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+        # Unlike testAddLicenseToShell, year 2020 should be picked up from existing one-liner
+        self.assertEqual(result.matcher.group("start_year"), "2020, ")
+        self.assertEqual(result.matcher.group("end_year"), "2022")
+        # Assert that fix removed one liner and put full license on place of it
+        with open(outfile_one_liner) as f1, open(outfile_valid) as f2:
+            self.assertEqual(f1.read(), f2.read())
+        os.remove(outfile_one_liner)
+        os.remove(outfile_valid)
+
 
 logging.basicConfig(level=logging.ERROR)
 os.chdir(sys.path[0])

@@ -93,20 +93,20 @@ class LicenseCheck(object):
         return \
             "^(?P<shebang>" + type_def["shebang_pattern"] + ")?" + \
             "(?P<license>\n*" + \
-            re.escape(type_def["insert_before"]) + \
+            (type_def["insert_before_pattern"] if "insert_before_pattern" in type_def else re.escape(type_def["insert_before"])) + \
             "(" + line_prefix + "\n)*" + \
             "\n*".join(map(lambda x:  (("(" + line_prefix + ")?") if x == "\\" else line_prefix) + x + " *", license_pattern)) + "\n*" + \
             "(" + line_prefix + "\n)*" + \
-            re.escape(type_def["insert_after"]) + \
+            (type_def["insert_after_pattern"] if "insert_after_pattern" in type_def else re.escape(type_def["insert_after"])) + \
             ")?"
 
     def matches_exclude(self, path):
         for p in self.config["exclude"]:
             if fnmatch.fnmatch(os.path.relpath(path), os.path.relpath(p)):
-                logging.debug("Matching %s against %s .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
+                logging.debug("Matching %s against %s to check for exclusion .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
                 return True
             else:
-                logging.debug("Matching %s against %s .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
+                logging.debug("Matching %s against %s to check for exclusion .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
         return False
 
     def check(self, scan_targets, fix=False):
@@ -200,14 +200,16 @@ class LicenseCheck(object):
             f.write(new_content + content[pos:])
 
     def check_file(self, filename, fix=False, outfile=None):
-        filename_pattern = None
-        for filename_pattern_candidate in self.config["file_types"]:
-            if fnmatch.fnmatch(os.path.basename(filename), filename_pattern_candidate):
-                filename_pattern = filename_pattern_candidate
+        file_type = None
+        for file_type_entry in self.config["file_types"]:
+            if fnmatch.fnmatch(os.path.relpath(filename), file_type_entry["pattern"]):
+                file_type = file_type_entry["type"]
+                logging.debug("Matching %s against %s to determine file type .... matched!" % (os.path.relpath(filename), file_type_entry["pattern"]))
                 break
-        if not filename_pattern:
+            else:
+                logging.debug("Matching %s against %s to determine file type .... no match!" % (os.path.relpath(filename), file_type_entry["pattern"]))
+        if not file_type:
             return self.LicenseCheckResult(0, "Filename pattern not recognized: %s" % filename)
-        file_type = self.config["file_types"][filename_pattern]
         logging.debug("Identified file type for %s as %s" % (filename, file_type))
         with open(filename) as f:
             content = f.read(4092)

@@ -55,6 +55,13 @@ comment_types:
     insert_before: ""
     insert_after: ""
     line_prefix: "//  "
+  go_template:
+    shebang_pattern: ""
+    insert_before: "{{ /*\n"
+    insert_before_pattern: "\\{\\{\\-? */\\*\n*"
+    insert_after: " */ }}\n"
+    insert_after_pattern: " *\\*/ *\\-?\\}\\} *\n*"
+    line_prefix: ""
   yaml:
     shebang_pattern: ""
     insert_before: ""
@@ -68,25 +75,46 @@ comment_types:
 
 # Recognized filename patterns and corresponding comment types.
 # Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
+# Order is important - first pattern match wins.
 file_types:
-  "*.sh": shell_or_python
-  "*.bash": shell_or_python
-  "*.py": shell_or_python
-  "Dockerfile*": docker
-  "*/Dockerfile*": docker
-  "*.java": java
-  "*.groovy": java
-  "*.css": java
-  "*.js": java
-  "Jenkinsfile*": java
-  "*.go": go
-  "*.xml": xml
-  "*.html": html
-  "*.yaml": yaml
-  "*.yml": yaml
-  LICENSE: plain
-  "Makefile*": docker
-  "*/Makefile*": docker
+  - pattern: "*.sh"
+    type: shell_or_python
+  - pattern: "*.bash"
+    type: shell_or_python
+  - pattern: "*.py"
+    type: shell_or_python
+  - pattern: "Dockerfile*"
+    type: docker
+  - pattern: "*/Dockerfile*"
+    type: docker
+  - pattern: "*.java"
+    type: java
+  - pattern: "*.groovy"
+    type: java
+  - pattern: "*.css"
+    type: java
+  - pattern: "*.js"
+    type: java
+  - pattern: "Jenkinsfile*"
+    type: java
+  - pattern: "*.go"
+    type: go
+  - pattern: "*.xml"
+    type: xml
+  - pattern: "*.html"
+    type: html
+  - pattern: "*/templates/*.yaml"
+    type: go_template
+  - pattern: "*.yaml"
+    type: yaml
+  - pattern: "*.yml"
+    type: yaml
+  - pattern: LICENSE
+    type: plain
+  - pattern: "Makefile*"
+    type: docker
+  - pattern: "*/Makefile*"
+    type: docker
 
 # Default exclusion list - override this in .license_check.yaml, if you need to remove some entries.
 # Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').

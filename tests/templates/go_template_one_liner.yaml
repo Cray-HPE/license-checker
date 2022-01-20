@@ -1,0 +1,23 @@
+{{- /*
+Copyright 2020 Hewlett Packard Enterprise Development LP
+*/ -}}
+{{- if .Values.rmPalsPostgresExporter.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "cray-sysmgmt-health.fullname" . }}-rm-pals-postgres-exporter
+  namespace: {{ .Values.rmPalsPostgresExporter.service.namespace }}
+  labels:
+    service: {{ template "cray-sysmgmt-health.name" . }}-rm-pals-postgres-exporter
+    release: {{ template "cray-sysmgmt-health.name" . }}
+{{ include "cray-sysmgmt-health.labels" . | indent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: exporter
+      port: {{ .Values.rmPalsPostgresExporter.service.port }}
+      protocol: TCP
+      targetPort: {{ .Values.rmPalsPostgresExporter.service.targetPort }}
+  selector:
+{{ toYaml .Values.rmPalsPostgresExporter.service.selector | indent 6 }}
+{{- end }}
