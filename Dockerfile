@@ -25,6 +25,7 @@ FROM python:latest
 RUN pip3 install requests pyyaml
 COPY license_check* /license_check/
 COPY tests/* /license_check/tests/
+COPY tests/templates/* /license_check/tests/templates/
 RUN groupadd -g 10000 github-actions-runner && \
     useradd -u 10000 -g 10000 github-actions-runner
 USER github-actions-runner
