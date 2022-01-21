@@ -57,9 +57,9 @@ comment_types:
     line_prefix: "//  "
   go_template:
     shebang_pattern: ""
-    insert_before: "{{ /*\n"
+    insert_before: "{{- /*\n"
     insert_before_pattern: "\\{\\{\\-? */\\*\n*"
-    insert_after: " */ }}\n"
+    insert_after: "*/ -}}\n"
     insert_after_pattern: " *\\*/ *\\-?\\}\\} *\n*"
     line_prefix: ""
   yaml:
