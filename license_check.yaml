@@ -140,7 +140,7 @@ exclude:
 # Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
 add_exclude: []
 
-# Copyright owner which will be injected in plase of [owner] placeholder in license template.
+# Copyright owner which will be injected in place of [owner] placeholder in license template.
 owner: Hewlett Packard Enterprise Development LP
 
 # License template text

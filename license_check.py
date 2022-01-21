@@ -74,6 +74,8 @@ class LicenseCheck(object):
                 self.template_to_pattern(self.config["license_template"], type_def),
                 list(map(lambda x: self.template_to_pattern(x, type_def), self.config["additional_templates"]))
             )
+        # Cache exclusion computations
+        self.exclusion_cache = {}
 
     def read_config(self, config_file):
         logging.info("Parsing config file %s ..." % os.path.realpath(config_file))
@@ -100,15 +102,40 @@ class LicenseCheck(object):
             (type_def["insert_after_pattern"] if "insert_after_pattern" in type_def else re.escape(type_def["insert_after"])) + \
             ")?"
 
+    """
+    Checks if given path matches exclusion configuration. Matching performed for nested paths, starting from original path
+    and up to root folder. It is needed to exclude files, explciitly provided in command line, not matching exclusion pattern,
+    but belonging to excluded folder.
+    """
     def matches_exclude(self, path):
-        for p in self.config["exclude"]:
-            if fnmatch.fnmatch(os.path.relpath(path), os.path.relpath(p)):
-                logging.debug("Matching %s against %s to check for exclusion .... matched!" % (os.path.relpath(path), os.path.relpath(p)))
+        relpath = os.path.relpath(path)
+        logging.debug("Checking \"%s\" for exclusion" % (relpath))
+        while relpath:
+            if self.matches_exclude_path(relpath):
+                logging.debug("Final result of exclusion check for \"%s\" is True" % (path))
                 return True
             else:
-                logging.debug("Matching %s against %s to check for exclusion .... no match!" % (os.path.relpath(path), os.path.relpath(p)))
+                relpath = relpath.rpartition("/")[0]
+        logging.debug("Final result of exclusion check for \"%s\" is False" % (path))
         return False
 
+    def matches_exclude_path(self, path):
+        if path in self.exclusion_cache:
+            logging.debug("Found exclusion check result for \"%s\" in cache as %s" % (path, str(self.exclusion_cache[path])))
+            return self.exclusion_cache[path]
+        for p in self.config["exclude"]:
+            if fnmatch.fnmatch(path, p):
+                logging.debug("Matching \"%s\" against \"%s\" .... matched!" % (path, p))
+                self.exclusion_cache[path] = True
+                return True
+            else:
+                logging.debug("Matching \"%s\" against \"%s\" .... no match!" % (path, p))
+        self.exclusion_cache[path] = False
+        return False
+
+    """
+    Main working method
+    """
     def check(self, scan_targets, fix=False):
         result = []
         if isinstance(scan_targets, str):

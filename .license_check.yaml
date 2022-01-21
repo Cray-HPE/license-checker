@@ -23,4 +23,3 @@
 #
 add_exclude:
   - tests
-  - tests/*

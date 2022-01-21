@@ -36,8 +36,13 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result, [])
 
     def testExcludeFile(self):
-       checker = license_check.LicenseCheck(exclude=["tests/*.*"], add_exclude=[])
+       checker = license_check.LicenseCheck(exclude=["tests/*"], add_exclude=[])
        result = checker.check("tests")
+       self.assertEqual(result, [])
+
+    def testExcludeFileInFolder(self):
+       checker = license_check.LicenseCheck(exclude=["tests"], add_exclude=[])
+       result = checker.check(["tests/templates/go_template_no_license.yaml", "tests/templates/go_template_one_liner.yaml"])
        self.assertEqual(result, [])
 
     def testValidYaml(self):
