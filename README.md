@@ -23,6 +23,12 @@ Run this to fix license headers in all recognized files in current directory, pu
 ```
 $ docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-docker/stable/license-checker --fix --start-year 2021
 ```
+
+Run this to fix license headers in specific files, pushing start of copyright year range back to year 2021:
+```
+$ docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-docker/stable/license-checker --fix --start-year 2021 path/to/file1 path/to/file2
+```
+
 Alternatively, if you don't want to run docker, you can run license-checker Python script. You will need standard Python3 distro, plus PyYAML module installed. Clone license-checker repo. If run without parameters, license-checker script will perform read-only checking in current directory.
 ```
 $ git clone https://github.com/Cray-HPE/license-checker.git
