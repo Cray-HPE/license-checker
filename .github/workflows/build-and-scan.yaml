@@ -29,7 +29,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Build, Sign and Scan Image
         uses: Cray-HPE/github-actions/build-sign-scan@main
