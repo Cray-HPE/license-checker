@@ -26,6 +26,9 @@ name: build-sign-scan
 on:
   push:
   workflow_dispatch:
+  # Rebuild weekly, on Sundays
+  schedule:
+    - cron:  '30 8 * * 6'
 
 jobs:
   build:
