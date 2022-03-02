@@ -30,18 +30,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
       - name: Build, Sign and Scan Image
-        uses: Cray-HPE/github-actions/build-sign-scan@main
+        uses: Cray-HPE/github-actions/build-sign-scan@feature/gcp-workload-idp
         with:
           # Only push on main builds
-          docker_push: ${{ github.ref == 'refs/heads/main' }}
+          docker_push: true
+          # ${{ github.ref == 'refs/heads/main' }}
           context_path: ""
           docker_repo: artifactory.algol60.net/csm-docker/stable/${{ github.event.repository.name }}
           docker_tag: latest
           artifactory_algol60_token: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
-          cosign_gcp_project_id: ${{ secrets.COSIGN_GCP_PROJECT_ID }}
-          cosign_gcp_sa_key: ${{ secrets.COSIGN_GCP_SA_KEY }}
+          # cosign_gcp_project_id: ${{ secrets.COSIGN_GCP_PROJECT_ID }}
+          # cosign_gcp_sa_key: ${{ secrets.COSIGN_GCP_SA_KEY }}
+          cosign_gcp_workload_identity_provider: ${{ secrets.COSIGN_GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          cosign_gcp_service_account: ${{ secrets.COSIGN_GCP_SERVICE_ACCOUNT }}
           cosign_key: ${{ secrets.COSIGN_KEY }}
           snyk_token: ${{ secrets.SNYK_TOKEN }}
           github_sha: $GITHUB_SHA
