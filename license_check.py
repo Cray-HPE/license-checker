@@ -290,5 +290,5 @@ if __name__ == "__main__":
         else:
             print("No files were scanned")
         if success < total:
-            print("Please refer to https://github.com/Cray-HPE/license-checker for remediation advice.")
+            print("Not all files have proper license headers. Please refer to https://github.com/Cray-HPE/license-checker for remediation advice.")
         sys.exit(1 if success < total else 0)
