@@ -21,7 +21,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-FROM python:latest
+FROM python:3-slim
 RUN pip3 install requests pyyaml
 COPY license_check* /license_check/
 COPY tests/* /license_check/tests/
