@@ -38,7 +38,7 @@ jobs:
       id-token: 'write'
     steps:
       - name: Build, Sign and Scan Image
-        uses: Cray-HPE/github-actions/build-sign-scan@main
+        uses: Cray-HPE/github-actions/build-sign-scan@feature/docker-metadata
         with:
           # Only push on main builds
           docker_push: ${{ github.ref == 'refs/heads/main' }}
