@@ -289,4 +289,6 @@ if __name__ == "__main__":
             print("License headers score: %d%%" % (100.0 * success / total))
         else:
             print("No files were scanned")
+        if success < total:
+            print("Please refer to https://github.com/Cray-HPE/license-checker for remediation advice.")
         sys.exit(1 if success < total else 0)
