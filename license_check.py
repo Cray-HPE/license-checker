@@ -286,9 +286,13 @@ if __name__ == "__main__":
         success = len(list(filter(lambda x: x.code == 0, result)))
         total = len(result)
         if total > 0:
-            print("License headers score: %d%%" % (100.0 * success / total))
+            logging.info("License headers score: %d%%" % (100.0 * success / total))
         else:
-            print("No files were scanned")
+            logging.warning("No files were scanned")
         if success < total:
-            print("Not all files have proper license headers. Please refer to https://github.com/Cray-HPE/license-checker for remediation advice.")
+            logging.warning("Not all files have proper license headers. You may fix them by running:")
+            logging.warning("")
+            logging.warning("    docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-docker/stable/license-checker --fix %s" % " ".join(args.scan_target))
+            logging.warning("")
+            logging.warning("Please refer to https://github.com/Cray-HPE/license-checker for more details.")
         sys.exit(1 if success < total else 0)
