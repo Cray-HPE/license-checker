@@ -43,7 +43,7 @@ jobs:
           # Only push on main builds
           docker_push: ${{ github.ref == 'refs/heads/main' }}
           context_path: ""
-          docker_repo: artifactory.algol60.net/csm-docker/stable/${{ github.event.repository.name }}
+          docker_repo: artifactory.algol60.net/csm-docker/stable/license-checker
           docker_tag: latest
           artifactory_algol60_token: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
           cosign_gcp_workload_identity_provider: ${{ secrets.COSIGN_GCP_WORKLOAD_IDENTITY_PROVIDER }}
