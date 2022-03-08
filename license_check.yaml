@@ -63,7 +63,8 @@ comment_types:
     insert_after_pattern: " *\\*/ *\\-?\\}\\} *\n*"
     line_prefix: ""
   yaml:
-    shebang_pattern: ""
+    # Ansible playbook files may have shebang lines
+    shebang_pattern: "^#\\![/a-z0-9 \\-]+\n"
     insert_before: ""
     insert_after: ""
     line_prefix: "# "
