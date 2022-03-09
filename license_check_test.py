@@ -36,14 +36,14 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result, [])
 
     def testExcludeFile(self):
-       checker = license_check.LicenseCheck(exclude=["tests/*"], add_exclude=[])
-       result = checker.check("tests")
-       self.assertEqual(result, [])
+        checker = license_check.LicenseCheck(exclude=["tests/*"], add_exclude=[])
+        result = checker.check("tests")
+        self.assertEqual(result, [])
 
     def testExcludeFileInFolder(self):
-       checker = license_check.LicenseCheck(exclude=["tests"], add_exclude=[])
-       result = checker.check(["tests/templates/go_template_no_license.yaml", "tests/templates/go_template_one_liner.yaml"])
-       self.assertEqual(result, [])
+        checker = license_check.LicenseCheck(exclude=["tests"], add_exclude=[])
+        result = checker.check(["tests/templates/go_template_no_license.yaml", "tests/templates/go_template_one_liner.yaml"])
+        self.assertEqual(result, [])
 
     def testValidYaml(self):
         checker = license_check.LicenseCheck(end_year=2020)
@@ -123,10 +123,17 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
 
+    def testValidInlineGo(self):
+        checker = license_check.LicenseCheck(end_year=2020)
+        result = checker.check_file("tests/valid_old_range_inline.go")
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^License is up to date:")
+
     # [2020] > 2020-2021
     def testConvertSingleYearToRangeJava(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.mkdtemp() + "/valid_old_year.java"
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/valid_old_year.java"
         checker.check_file("tests/valid_old_year.java", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -134,10 +141,12 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("start_year"), "2020-")
         self.assertEqual(result.matcher.group("end_year"), "2021")
         os.remove(outfile)
+        os.rmdir(tempdir)
 
     def testAddLicenseToXml(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.mkdtemp() + "/no_license.xml"
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/no_license.xml"
         checker.check_file("tests/no_license.xml", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -145,10 +154,12 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("start_year"), "")
         self.assertEqual(result.matcher.group("end_year"), "2021")
         os.remove(outfile)
+        os.rmdir(tempdir)
 
     def testAddLicenseToJava(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.mkdtemp() + "/no_license.java"
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/no_license.java"
         checker.check_file("tests/no_license.java", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -156,6 +167,7 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("start_year"), "")
         self.assertEqual(result.matcher.group("end_year"), "2021")
         os.remove(outfile)
+        os.rmdir(tempdir)
 
     def testFixOneLinerInXml(self):
         checker = license_check.LicenseCheck(end_year=2022)
@@ -175,10 +187,12 @@ class LicenseCheckTest(unittest.TestCase):
             self.assertEqual(f1.read(), f2.read())
         os.remove(outfile_one_liner)
         os.remove(outfile_valid)
+        os.rmdir(tempdir)
 
     def testAddLicenseToShell(self):
         checker = license_check.LicenseCheck(start_year=2019, end_year=2021)
-        outfile = tempfile.mkdtemp() + "/no_license.sh"
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/no_license.sh"
         checker.check_file("tests/no_license.sh", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
@@ -186,6 +200,7 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("start_year"), "2019-")
         self.assertEqual(result.matcher.group("end_year"), "2021")
         os.remove(outfile)
+        os.rmdir(tempdir)
 
     def testFixOneLinerInShell(self):
         checker = license_check.LicenseCheck(end_year=2021)
@@ -205,42 +220,49 @@ class LicenseCheckTest(unittest.TestCase):
             self.assertEqual(f1.read(), f2.read())
         os.remove(outfile_one_liner)
         os.remove(outfile_valid)
+        os.rmdir(tempdir)
 
     # Test that "2014, 2016-2020" is converted to "2014, 2016-2021" in year 2021
     def testExtendRangeGo(self):
         checker = license_check.LicenseCheck(end_year=2021)
-        outfile = tempfile.mkdtemp() + "/valid_old_range.go"
-        checker.check_file("tests/valid_old_range.go", fix=True, outfile=outfile)
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/valid_old_range_inline.go"
+        checker.check_file("tests/valid_old_range_inline.go", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
         self.assertEqual(result.matcher.group("start_year"), "2014, 2016-")
         self.assertEqual(result.matcher.group("end_year"), "2021")
         os.remove(outfile)
+        os.rmdir(tempdir)
 
     # Test that "2014, 2016-2020" is converted to "2014, 2016-2020, 2022" in year 2022
     def testAddToRangeGo(self):
         checker = license_check.LicenseCheck(end_year=2022)
-        outfile = tempfile.mkdtemp() + "/valid_old_range.go"
-        checker.check_file("tests/valid_old_range.go", fix=True, outfile=outfile)
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/valid_old_range_inline.go"
+        checker.check_file("tests/valid_old_range_inline.go", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
         self.assertEqual(result.matcher.group("start_year"), "2014, 2016-2020, ")
         self.assertEqual(result.matcher.group("end_year"), "2022")
         os.remove(outfile)
+        os.rmdir(tempdir)
 
     # Test that "2014, 2016-2020" is converted to "2014, 2016-2019" in year 2019
     def testFixFutureYearGo(self):
         checker = license_check.LicenseCheck(end_year=2019)
-        outfile = tempfile.mkdtemp() + "/valid_old_range.go"
-        checker.check_file("tests/valid_old_range.go", fix=True, outfile=outfile)
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/valid_old_range_inline.go"
+        checker.check_file("tests/valid_old_range_inline.go", fix=True, outfile=outfile)
         result = checker.check_file(outfile)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
         self.assertEqual(result.matcher.group("start_year"), "2014, 2016-")
         self.assertEqual(result.matcher.group("end_year"), "2019")
         os.remove(outfile)
+        os.rmdir(tempdir)
 
     def testValidGoTemplate(self):
         checker = license_check.LicenseCheck(end_year=2022)
@@ -261,6 +283,8 @@ class LicenseCheckTest(unittest.TestCase):
         self.assertEqual(result.matcher.group("start_year"), "")
         self.assertEqual(result.matcher.group("end_year"), "2022")
         os.remove(outfile)
+        os.rmdir(tempdir + "/templates")
+        os.rmdir(tempdir)
 
     def testFixOneLinerInGoTemplate(self):
         checker = license_check.LicenseCheck(end_year=2022)
@@ -282,6 +306,18 @@ class LicenseCheckTest(unittest.TestCase):
             self.assertEqual(f1.read(), f2.read())
         os.remove(outfile_one_liner)
         os.remove(outfile_valid)
+        os.rmdir(tempdir + "/templates")
+        os.rmdir(tempdir)
+
+    def testConvertInlineToBlockGo(self):
+        checker = license_check.LicenseCheck(end_year=2020)
+        tempdir = tempfile.mkdtemp()
+        outfile = tempdir + "/valid_old_range_inline.go"
+        checker.check_file("tests/valid_old_range_inline.go", fix=True, outfile=outfile)
+        with open(outfile) as f1, open("tests/valid_old_range_block.go") as f2:
+            self.assertEqual(f1.read(), f2.read())
+        os.remove(outfile)
+        os.rmdir(tempdir)
 
 
 logging.basicConfig(level=logging.ERROR)

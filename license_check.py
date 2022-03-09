@@ -225,24 +225,31 @@ class LicenseCheck(object):
             content = f.read()
         with open(outfile if outfile is not None else filename, "w") as f:
             f.write(new_content + content[pos:])
+        return None
 
     def check_file(self, filename, fix=False, outfile=None):
-        file_type = None
+        file_type_def = None
         for file_type_entry in self.config["file_types"]:
             if fnmatch.fnmatch(os.path.relpath(filename), file_type_entry["pattern"]):
-                file_type = file_type_entry["type"]
+                file_type_def = file_type_entry
                 logging.debug("Matching %s against %s to determine file type .... matched!" % (os.path.relpath(filename), file_type_entry["pattern"]))
                 break
             else:
                 logging.debug("Matching %s against %s to determine file type .... no match!" % (os.path.relpath(filename), file_type_entry["pattern"]))
-        if not file_type:
+        if not file_type_def:
             return self.LicenseCheckResult(0, "Filename pattern not recognized: %s" % filename)
-        logging.debug("Identified file type for %s as %s" % (filename, file_type))
+        file_type = file_type_def["type"]
         with open(filename) as f:
             content = f.read(4092)
+        logging.debug("Trying main file comment type for %s as %s" % (filename, file_type))
         pattern = self.license_pattern_by_type[file_type][0]
         logging.debug("Applying pattern:\n%s\nagainst content\n%s" % (pattern, content))
         result = re.search(pattern, content)
+        if not result or not result.groupdict().get("license") and "alternative_type" in file_type_def:
+            logging.debug("Trying alternate file comment type for %s as %s" % (filename, file_type_def["alternative_type"]))
+            pattern = self.license_pattern_by_type[file_type_def["alternative_type"]][0]
+            logging.debug("Applying pattern:\n%s\nagainst content\n%s" % (pattern, content))
+            result = re.search(pattern, content)
         if result and result.groupdict().get("license"):
             logging.debug("Discovered groups: %s" % str(result.groupdict()))
             if result.groupdict().get("end_year") and result.group("end_year") != str(self.config["end_year"]):

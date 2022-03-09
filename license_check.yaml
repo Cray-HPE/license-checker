@@ -45,12 +45,12 @@ comment_types:
     insert_before: ""
     insert_after: ""
     line_prefix: ""
-  java:
+  java_block:
     shebang_pattern: ""
     insert_before: "/*\n"
     insert_after: " */\n"
     line_prefix: " *  "
-  go:
+  java_inline:
     shebang_pattern: ""
     insert_before: ""
     insert_after: ""
@@ -75,8 +75,10 @@ comment_types:
     line_prefix: "# "
 
 # Recognized filename patterns and corresponding comment types.
-# Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
-# Order is important - first pattern match wins.
+# * Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
+# * Order is important - first pattern match wins.
+# * type (mandatory) is checked first and will be applied if run with --fix
+# * alternative_type (optional) will be checked next. Will pass validation, but file will be converted to main type if run with --fix.
 file_types:
   - pattern: "*.sh"
     type: shell_or_python
@@ -89,23 +91,30 @@ file_types:
   - pattern: "*/Dockerfile*"
     type: docker
   - pattern: "*.java"
-    type: java
+    type: java_block
+    alternative_type: java_inline
   - pattern: "*.groovy"
-    type: java
+    type: java_block
+    alternative_type: java_inline
   - pattern: "*.css"
-    type: java
+    type: java_block
+    alternative_type: java_inline
   - pattern: "*.js"
-    type: java
+    type: java_block
+    alternative_type: java_inline
   - pattern: "Jenkinsfile*"
-    type: java
+    type: java_block
+    alternative_type: java_inline
   - pattern: "*.go"
-    type: go
+    type: java_block
+    alternative_type: java_inline
   - pattern: "*.xml"
     type: xml
   - pattern: "*.html"
     type: html
   - pattern: "*/templates/*.yaml"
     type: go_template
+    alternative_type: yaml
   - pattern: "*.yaml"
     type: yaml
   - pattern: "*.yml"
