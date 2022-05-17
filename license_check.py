@@ -241,6 +241,8 @@ class LicenseCheck(object):
         file_type = file_type_def["type"]
         with open(filename) as f:
             content = f.read(4092)
+        if not content:
+            return self.LicenseCheckResult(0, "File %s is empty" % filename)
         logging.debug("Trying main file comment type for %s as %s" % (filename, file_type))
         pattern = self.license_pattern_by_type[file_type][0]
         logging.debug("Applying pattern:\n%s\nagainst content\n%s" % (pattern, content))

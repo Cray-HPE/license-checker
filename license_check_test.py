@@ -23,6 +23,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 #
 import unittest
+from unittest.mock import patch, mock_open
 import license_check
 import sys
 import logging
@@ -128,6 +129,14 @@ class LicenseCheckTest(unittest.TestCase):
         result = checker.check_file("tests/valid_old_range_inline.go")
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
+
+    def testEmptyFile(self):
+        """Test that an empty file passes the license check."""
+        checker = license_check.LicenseCheck()
+        with patch('builtins.open', mock_open(read_data='')):
+            result = checker.check_file("tests/empty_file.py")
+        self.assertEqual(result.code, 0)
+        self.assertRegex(result.message, "^File tests/empty_file.py is empty")
 
     # [2020] > 2020-2021
     def testConvertSingleYearToRangeJava(self):
@@ -320,6 +329,7 @@ class LicenseCheckTest(unittest.TestCase):
         os.rmdir(tempdir)
 
 
-logging.basicConfig(level=logging.ERROR)
-os.chdir(sys.path[0])
-unittest.main()
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.ERROR)
+    os.chdir(sys.path[0])
+    unittest.main()
