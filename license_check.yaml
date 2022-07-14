@@ -145,6 +145,9 @@ exclude:
   - '*.jpg'
   - '*.gitignore'
   - '.github/CODEOWNERS'
+  - '*.helmignore'
+  - '*.dockerignore'
+  - 'motd'
 
 # Additional exclusion list - override this in .license_check.yaml to add entries to default exclusion list.
 # Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
