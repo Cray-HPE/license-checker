@@ -26,7 +26,7 @@
 # must go before license header. For example, shebang line in shell/python scripts, XML declaration in XML files (can be multiline).
 comment_types:
   shell_or_python:
-    shebang_pattern: "^#\\![/a-z0-9 \\-]+\n"
+    shebang_pattern: "^#\\![/a-z0-9 \\-_]+\n"
     insert_before: ""
     insert_after: ""
     line_prefix: "# "
