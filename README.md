@@ -63,7 +63,7 @@ Most notable settings, which may require customization, are:
    all folders, named `dist`, located deeper in file tree.
 
 ## Integration with GitHub Workflows
-Add the following to a file named `.github/workflows/license-check.yaml`, to make license checking part of your GitHub workflow:
+If docker image is available for anonymous read at public docker registry, add the following to a file named `.github/workflows/license-check.yaml`:
 ```
 name: license-check
 
@@ -73,11 +73,37 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: License Check
-        uses: docker://artifactory.algol60.net/csm-docker/stable/license-checker:latest
+        uses: docker://<your_public_registry>/license-checker:latest
+```
+Alternatively, if image is only available from private registry, create secrets holding private registry username and password, and 
+use containerized job, which does support private registries:
+```
+name: license-check
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+
+    container:
+      image: <your_private_registry>/license-checker:latest
+      credentials:
+          username: ${{ secrets.<your_private_registry_username_secret> }}
+          password: ${{ secrets.<your_private_registry_password_secret> }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: License Check
+        run: /usr/local/bin/python3 /license_check/license_check.py
 ```
