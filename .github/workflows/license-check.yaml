@@ -28,11 +28,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  license-check:
     runs-on: ubuntu-latest
+
+    container:
+      image: artifactory.algol60.net/csm-docker/stable/license-checker:latest
+      credentials:
+          username: ${{ secrets.ARTIFACTORY_ALGOL60_READONLY_USERNAME }}
+          password: ${{ secrets.ARTIFACTORY_ALGOL60_READONLY_TOKEN }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: License Check
-        uses: docker://artifactory.algol60.net/csm-docker/stable/license-checker:latest
+        run: /usr/local/bin/python3 /license_check/license_check.py
