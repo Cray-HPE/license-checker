@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -88,10 +88,10 @@ class LicenseCheck(object):
     """
     def template_to_pattern(self, template, type_def):
         license_pattern = re.escape(template.strip()) \
-            .replace('\\[year\\]', '\[?(?P<start_year>[0-9\- ,]*)(?P<end_year>[0-9]{4})\]?') \
-            .replace('\\[owner\\]', '(?P<owner>[a-zA-Z0-9 \-,/]+)') \
+            .replace(r'\[year\]', r'\[?(?P<start_year>[0-9\- ,]*)(?P<end_year>[0-9]{4})\]?') \
+            .replace(r'\[owner\]', r'(?P<owner>[a-zA-Z0-9 \-,/]+)') \
             .split("\n")
-        line_prefix = re.sub("(\\\ )+", "\\ *", re.escape(type_def["line_prefix"]))
+        line_prefix = re.sub(r'(\\ )+', r'\ *', re.escape(type_def["line_prefix"]))
         return \
             "^(?P<shebang>" + type_def["shebang_pattern"] + ")?" + \
             "(?P<license>\n*" + \
