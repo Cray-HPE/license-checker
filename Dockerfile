@@ -28,9 +28,9 @@ RUN pip3 install requests pyyaml
 COPY license_check* /license_check/
 COPY tests/* /license_check/tests/
 COPY tests/templates/* /license_check/tests/templates/
-RUN groupadd -g 123 github-actions-runner && \
-    useradd -u 1001 -g 123 github-actions-runner
-USER github-actions-runner
+# RUN groupadd -g 123 github-actions-runner && \
+#     useradd -u 1001 -g 123 github-actions-runner
+# USER github-actions-runner
 RUN /usr/local/bin/python3 /license_check/license_check_test.py
 WORKDIR /github/workspace
 ENTRYPOINT ["/usr/local/bin/python3", "/license_check/license_check.py"]
