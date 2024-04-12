@@ -63,7 +63,7 @@ Most notable settings, which may require customization, are:
    all folders, named `dist`, located deeper in file tree.
 
 ## Integration with GitHub Workflows
-If docker image is available for anonymous read at public docker registry, add the following to a file named `.github/workflows/license-check.yaml`:
+Add the following to a file named `.github/workflows/license-check.yaml`:
 ```
 name: license-check
 
@@ -76,34 +76,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: License Check
-        uses: docker://<your_public_registry>/license-checker:latest
+        uses: docker://<your_container_registry>/license-checker:latest
+        shell: sh
 ```
-Alternatively, if image is only available from private registry, create secrets holding private registry username and password, and 
-use containerized job, which does support private registries:
+This example will perform license header validation on all files in the repo, when code is pushed to GitHub (`push`) or workflow started
+manually (`workflow_dispatch`). You may need adjust ru conditions, runner labels, or provide container registry credentials via `container`
+section.
+
+Alternatively, you may install License Checker as a validation check on PR submission. In this case, it makes sense to run validation
+only on files which were actually changed within the PR. There's a shorthand composite action define din `action.yaml` file in this repo.
+In this mode, use the following workflow template:
 ```
-name: license-check
+name: Check Licenses
 
 on:
-  push:
-  workflow_dispatch:
+  pull_request:
 
 jobs:
   license-check:
     runs-on: ubuntu-latest
-
-    container:
-      image: <your_private_registry>/license-checker:latest
-      credentials:
-          username: ${{ secrets.<your_private_registry_username_secret> }}
-          password: ${{ secrets.<your_private_registry_password_secret> }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: License Check
-        run: /usr/local/bin/python3 /license_check/license_check.py
+      - uses: Cray-HPE/license-checker@main
 ```
