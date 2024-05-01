@@ -21,7 +21,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 #
-name: build-sign-scan
+name: Build, Sign and Scan Image
 
 on:
   push:
@@ -50,3 +50,4 @@ jobs:
           cosign_gcp_workload_identity_provider: ${{ secrets.COSIGN_GCP_WORKLOAD_IDENTITY_PROVIDER_RSA }}
           cosign_gcp_service_account: ${{ secrets.COSIGN_GCP_SERVICE_ACCOUNT_RSA }}
           cosign_key: ${{ secrets.COSIGN_KEY_RSA }}
+          snyk_token: ${{ secrets.SNYK_TOKEN }}
