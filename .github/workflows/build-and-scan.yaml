@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2024 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -38,15 +38,15 @@ jobs:
       id-token: 'write'
     steps:
       - name: Build, Sign and Scan Image
-        uses: Cray-HPE/github-actions/build-sign-scan@main
+        uses: Cray-HPE/github-actions/build-sign-scan@build-sign-scan/v2
         with:
           context_path: "."
           docker_repo: artifactory.algol60.net/csm-docker/${{ github.ref == 'refs/heads/main' && 'stable' || 'unstable' }}/license-checker
           docker_tag: latest
           docker_build_platforms: linux/arm64,linux/amd64
-          artifactory_algol60_token: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
-          cosign_gcp_workload_identity_provider: ${{ secrets.COSIGN_GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          cosign_gcp_service_account: ${{ secrets.COSIGN_GCP_SERVICE_ACCOUNT }}
-          cosign_key: ${{ secrets.COSIGN_KEY }}
-          snyk_token: ${{ secrets.SNYK_TOKEN }}
-          github_sha: $GITHUB_SHA
+          docker_username: ${{ secrets.ARTIFACTORY_ALGOL60_USERNAME }}
+          docker_password: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
+          sign: ${{ github.ref == 'refs/heads/main' }}
+          cosign_gcp_workload_identity_provider: ${{ secrets.COSIGN_GCP_WORKLOAD_IDENTITY_PROVIDER_RSA }}
+          cosign_gcp_service_account: ${{ secrets.COSIGN_GCP_SERVICE_ACCOUNT_RSA }}
+          cosign_key: ${{ secrets.COSIGN_KEY_RSA }}
