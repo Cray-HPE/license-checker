@@ -46,7 +46,7 @@ jobs:
           docker_build_platforms: linux/arm64,linux/amd64
           docker_username: ${{ secrets.ARTIFACTORY_ALGOL60_USERNAME }}
           docker_password: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
-          sign: ${{ github.ref == 'refs/heads/main' }}
+          sign: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' }}
           cosign_gcp_workload_identity_provider: ${{ secrets.COSIGN_GCP_WORKLOAD_IDENTITY_PROVIDER_RSA }}
           cosign_gcp_service_account: ${{ secrets.COSIGN_GCP_SERVICE_ACCOUNT_RSA }}
           cosign_key: ${{ secrets.COSIGN_KEY_RSA }}
