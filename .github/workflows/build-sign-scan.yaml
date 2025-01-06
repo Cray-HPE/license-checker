@@ -37,12 +37,22 @@ jobs:
       contents: 'read'
       id-token: 'write'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Image Tag
+        id: git-describe
+        run: echo "tag=$(git describe --tags)" >> "$GITHUB_OUTPUT"
+
       - name: Build, Sign and Scan Image
         uses: Cray-HPE/github-actions/build-sign-scan@build-sign-scan/v2
         with:
           context_path: "."
           docker_repo: artifactory.algol60.net/csm-docker/${{ github.ref == 'refs/heads/main' && 'stable' || 'unstable' }}/license-checker
-          docker_tag: latest
+          docker_tag: ${{ steps.git-describe.outputs.tag }}
+          docker_additional_tags: "artifactory.algol60.net/csm-docker/${{ github.ref == 'refs/heads/main' && 'stable' || 'unstable' }}/license-checker:latest"
           docker_build_platforms: linux/arm64,linux/amd64
           docker_username: ${{ secrets.ARTIFACTORY_ALGOL60_USERNAME }}
           docker_password: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
