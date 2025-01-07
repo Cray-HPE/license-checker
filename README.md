@@ -50,7 +50,8 @@ Most notable settings, which may require customization, are:
     to ovewrite existing definition, or add new one, just add it to `.license_check.yaml`:
     ```
     file_types:
-        "*.htm": html
+        "*.htm":
+            type: html
     ```
 2. `add_exclude`. Use this section in `.license_check.yaml` to *add* new entries to exclusion list (preserving default entries):
    ```
