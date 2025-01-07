@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -46,13 +46,22 @@ class LicenseCheck(object):
         def __repr__(self):
             return "[%d, %s]" % (self.code, self.message)
 
+    def deep_merge(self, dict1, dict2):
+        result = dict1.copy()
+        for key, value in dict2.items():
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                result[key] = self.deep_merge(result[key], value)
+            else:
+                result[key] = value
+        return result
+
     def __init__(self, **kwargs):
         self.config = self.read_config(sys.path[0] + os.path.sep + 'license_check.yaml')
         config_override = kwargs.get("config_override")
         if not config_override:
             config_override = os.getcwd() + os.path.sep + ".license_check.yaml"
         if os.path.exists(config_override):
-            self.config.update(self.read_config(config_override))
+            self.config = self.deep_merge(self.config, self.read_config(config_override))
         else:
             logging.info("Skipping non-existent configuration file %s" % config_override)
         self.config.update(kwargs)
@@ -80,7 +89,11 @@ class LicenseCheck(object):
     def read_config(self, config_file):
         logging.info("Parsing config file %s ..." % os.path.realpath(config_file))
         with open(config_file) as f:
-            return yaml.load(f, Loader=yaml.SafeLoader)
+            config = yaml.load(f, Loader=yaml.SafeLoader)
+        if "file_types" in config and isinstance(config["file_types"], list):
+            logging.warning("Detected v1 list style config for file_types, converting to dict")
+            config["file_types"] = dict({f["pattern"] : {k: v for k, v in f.items() if k != "pattern"} for f in config["file_types"]})
+        return config
 
     """
     Converts template (a string with [year] and [owner] placeholders) to regex pattern, specific to a file type
@@ -229,13 +242,13 @@ class LicenseCheck(object):
 
     def check_file(self, filename, fix=False, outfile=None):
         file_type_def = None
-        for file_type_entry in self.config["file_types"]:
-            if fnmatch.fnmatch(os.path.relpath(filename), file_type_entry["pattern"]):
-                file_type_def = file_type_entry
-                logging.debug("Matching %s against %s to determine file type .... matched!" % (os.path.relpath(filename), file_type_entry["pattern"]))
+        for file_pattern in self.config["file_types"]:
+            if fnmatch.fnmatch(os.path.relpath(filename), file_pattern):
+                file_type_def = self.config["file_types"][file_pattern]
+                logging.debug("Matching %s against %s to determine file type .... matched!" % (os.path.relpath(filename), file_pattern))
                 break
             else:
-                logging.debug("Matching %s against %s to determine file type .... no match!" % (os.path.relpath(filename), file_type_entry["pattern"]))
+                logging.debug("Matching %s against %s to determine file type .... no match!" % (os.path.relpath(filename), file_pattern))
         if not file_type_def:
             return self.LicenseCheckResult(0, "Filename pattern not recognized: %s" % filename)
         file_type = file_type_def["type"]

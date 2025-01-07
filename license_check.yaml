@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2022, 2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -80,50 +80,50 @@ comment_types:
 # * type (mandatory) is checked first and will be applied if run with --fix
 # * alternative_type (optional) will be checked next. Will pass validation, but file will be converted to main type if run with --fix.
 file_types:
-  - pattern: "*.sh"
+  "*.sh":
     type: shell_or_python
-  - pattern: "*.bash"
+  "*.bash":
     type: shell_or_python
-  - pattern: "*.py"
+  "*.py":
     type: shell_or_python
-  - pattern: "Dockerfile*"
+  "Dockerfile*":
     type: docker
-  - pattern: "*/Dockerfile*"
+  "*/Dockerfile*":
     type: docker
-  - pattern: "*.java"
+  "*.java":
     type: java_block
     alternative_type: java_inline
-  - pattern: "*.groovy"
+  "*.groovy":
     type: java_block
     alternative_type: java_inline
-  - pattern: "*.css"
+  "*.css":
     type: java_block
     alternative_type: java_inline
-  - pattern: "*.js"
+  "*.js":
     type: java_block
     alternative_type: java_inline
-  - pattern: "Jenkinsfile*"
+  "Jenkinsfile*":
     type: java_block
     alternative_type: java_inline
-  - pattern: "*.go"
+  "*.go":
     type: java_block
     alternative_type: java_inline
-  - pattern: "*.xml"
+  "*.xml":
     type: xml
-  - pattern: "*.html"
+  "*.html":
     type: html
-  - pattern: "*/templates/*.yaml"
+  "*/templates/*.yaml":
     type: go_template
     alternative_type: yaml
-  - pattern: "*.yaml"
+  "*.yaml":
     type: yaml
-  - pattern: "*.yml"
+  "*.yml":
     type: yaml
-  - pattern: LICENSE
+  LICENSE:
     type: plain
-  - pattern: "Makefile*"
+  "Makefile*":
     type: docker
-  - pattern: "*/Makefile*"
+  "*/Makefile*":
     type: docker
 
 # Default exclusion list - override this in .license_check.yaml, if you need to remove some entries.
@@ -145,6 +145,7 @@ exclude:
   - '*.jpg'
   - '*.gitignore'
   - '.github/CODEOWNERS'
+  - '*.pyc'
 
 # Additional exclusion list - override this in .license_check.yaml to add entries to default exclusion list.
 # Pattern syntax follows Python fnmatch. Use separate entries to address files in root folder (as 'filename') and in subfolders (as '*/filename').
