@@ -88,7 +88,7 @@ manually (`workflow_dispatch`). You may need adjust ru conditions, runner labels
 section.
 
 Alternatively, you may install License Checker as a validation check on PR submission. In this case, it makes sense to run validation
-only on files which were actually changed within the PR. There's a shorthand composite action define din `action.yaml` file in this repo.
+only on files which were actually changed within the PR. There's a shorthand composite action defined in `action.yaml` file in this repo.
 In this mode, use the following workflow template:
 ```
 name: Check Licenses
