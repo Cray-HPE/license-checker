@@ -23,7 +23,7 @@
 #
 FROM python:3-slim
 # git is needed to support running of tj-actions/changed-files github action inside container
-RUN apt-get -y update && apt-get install -y git && rm -rf /var/lib/apt/lists/
+RUN apt-get -y update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/
 RUN pip3 install --root-user-action=ignore requests pyyaml
 COPY license_check* /license_check/
 COPY tests/* /license_check/tests/
