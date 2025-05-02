@@ -119,6 +119,8 @@ file_types:
     type: yaml
   "*.yml":
     type: yaml
+  "*.toml":
+    type: yaml
   LICENSE:
     type: plain
   "Makefile*":
