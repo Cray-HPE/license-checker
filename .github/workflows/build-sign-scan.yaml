@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2024 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -26,38 +26,14 @@ name: Build, Sign and Scan Image
 on:
   push:
   workflow_dispatch:
-  # Rebuild weekly, on Sundays
-  schedule:
-    - cron:  '30 8 * * 6'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get Image Tag
-        id: git-describe
-        run: echo "tag=$(git describe --tags)" >> "$GITHUB_OUTPUT"
-
-      - name: Build, Sign and Scan Image
-        uses: Cray-HPE/github-actions/build-sign-scan@build-sign-scan/v2
-        with:
-          context_path: "."
-          docker_repo: artifactory.algol60.net/csm-docker/${{ github.ref == 'refs/heads/main' && 'stable' || 'unstable' }}/license-checker
-          docker_tag: ${{ steps.git-describe.outputs.tag }}
-          docker_additional_tags: "${{ github.ref == 'refs/heads/main' && 'artifactory.algol60.net/csm-docker/stable/license-checker:latest' || '' }}"
-          docker_build_platforms: linux/arm64,linux/amd64
-          docker_username: ${{ secrets.ARTIFACTORY_ALGOL60_USERNAME }}
-          docker_password: ${{ secrets.ARTIFACTORY_ALGOL60_TOKEN }}
-          sign: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' }}
-          cosign_gcp_workload_identity_provider: ${{ secrets.COSIGN_GCP_WORKLOAD_IDENTITY_PROVIDER_RSA }}
-          cosign_gcp_service_account: ${{ secrets.COSIGN_GCP_SERVICE_ACCOUNT_RSA }}
-          cosign_key: ${{ secrets.COSIGN_KEY_RSA }}
-          snyk_token: ${{ secrets.SNYK_TOKEN }}
+  build-sign-scan:
+    uses: Cray-HPE/github-actions/.github/workflows/build-sign-scan.yaml@build-sign-scan-workflow/v1
+    with:
+      make_target: ${{ github.ref_type == 'tag' && 'stable' || 'unstable' }}
+      docker_login: false
+      docker_oidc: true
+      docker_additional_tags: "${{ github.ref == 'refs/heads/main' && 'us-docker.pkg.dev/csm-release/csm-docker/stable/license-checker:latest' || '' }}"
+      fail_on_snyk_errors: false
+    secrets: inherit
