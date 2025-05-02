@@ -1,7 +1,7 @@
 #
 # MIT License
 #
-# (C) Copyright 2021-2022 Hewlett Packard Enterprise Development LP
+# (C) Copyright 2021-2022, 2025 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,13 +24,13 @@
 FROM python:3-slim
 # git is needed to support running of tj-actions/changed-files github action inside container
 RUN apt-get -y update && apt-get install -y git && rm -rf /var/lib/apt/lists/
-RUN pip3 install requests pyyaml
+RUN pip3 install --root-user-action=ignore requests pyyaml
 COPY license_check* /license_check/
 COPY tests/* /license_check/tests/
 COPY tests/templates/* /license_check/tests/templates/
-# RUN groupadd -g 123 github-actions-runner && \
-#     useradd -u 1001 -g 123 github-actions-runner
-# USER github-actions-runner
+RUN groupadd -g 123 github-actions-runner && \
+    useradd -u 1001 -g 123 github-actions-runner
+USER github-actions-runner
 RUN /usr/local/bin/python3 /license_check/license_check_test.py
 WORKDIR /github/workspace
 ENTRYPOINT ["/usr/local/bin/python3", "/license_check/license_check.py"]
