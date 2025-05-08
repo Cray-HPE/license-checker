@@ -301,31 +301,31 @@ class LicenseCheckTest(unittest.TestCase):
         # outfile must be in templates/ folder, for yaml to be recognized as go_template    
         os.mkdir(tempdir + "/templates")
         outfile_one_liner = tempdir + "/templates/go_template_one_liner.yaml"
-        outfile_valid = tempdir + "/templates/go_template_valid.yaml"
         checker.check_file("tests/templates/go_template_one_liner.yaml", fix=True, outfile=outfile_one_liner)
-        checker.check_file("tests/templates/go_template_valid.yaml", fix=True, outfile=outfile_valid)
         result = checker.check_file(outfile_one_liner)
         self.assertEqual(result.code, 0)
         self.assertRegex(result.message, "^License is up to date:")
         # Unlike testAddLicenseToShell, year 2020 should be picked up from existing one-liner
         self.assertEqual(result.matcher.group("start_year"), "2020, ")
         self.assertEqual(result.matcher.group("end_year"), "2022")
-        # Assert that fix removed one liner and put full license on place of it
-        with open(outfile_one_liner) as f1, open(outfile_valid) as f2:
+        # Assert that fix removed one liner and put full license on place of it.
+        with open(outfile_one_liner) as f1, open("tests/templates/go_template_valid.yaml") as f2:
             self.assertEqual(f1.read(), f2.read())
         os.remove(outfile_one_liner)
-        os.remove(outfile_valid)
         os.rmdir(tempdir + "/templates")
         os.rmdir(tempdir)
 
     def testConvertInlineToBlockGo(self):
-        checker = license_check.LicenseCheck(end_year=2020)
+        checker = license_check.LicenseCheck(end_year=2022)
         tempdir = tempfile.mkdtemp()
-        outfile = tempdir + "/valid_old_range_inline.go"
-        checker.check_file("tests/valid_old_range_inline.go", fix=True, outfile=outfile)
-        with open(outfile) as f1, open("tests/valid_old_range_block.go") as f2:
+        outfile_inline = tempdir + "/valid_old_range_inline.go"
+        outfile_block = tempdir + "/valid_old_range_block.go"
+        checker.check_file("tests/valid_old_range_inline.go", fix=True, outfile=outfile_inline)
+        checker.check_file("tests/valid_old_range_block.go", fix=True, outfile=outfile_block)
+        with open(outfile_inline) as f1, open(outfile_block) as f2:
             self.assertEqual(f1.read(), f2.read())
-        os.remove(outfile)
+        os.remove(outfile_inline)
+        os.remove(outfile_block)
         os.rmdir(tempdir)
 
 

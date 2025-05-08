@@ -73,6 +73,7 @@ class LicenseCheck(object):
         current_year = datetime.datetime.now().year
         self.config["start_year"] = self.config["start_year"] if self.config.get("start_year") else current_year
         self.config["end_year"] = self.config["end_year"] if self.config.get("end_year") else current_year
+        self.config["ignore_year"] = self.config["ignore_year"] if self.config.get("ignore_year") else False
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logging.debug("Effective configuration:\n" + yaml.safe_dump(self.config))
         # Build dict {type_name: (main_pattern, [additional_patterns])}
@@ -223,21 +224,27 @@ class LicenseCheck(object):
     def fix_or_report(self, code, message, file_type, matcher, fix, filename, outfile):
         if not fix:
             return self.LicenseCheckResult(code, message, matcher)
-        logging.info("Fixing file %s ..." % filename)
-        new_content = ""
-        pos = 0
-        if matcher and matcher.groupdict().get("shebang"):
-            new_content += matcher.group("shebang")
-            pos += len(matcher.group("shebang"))
-        if matcher and matcher.groupdict().get("license"):
-            new_content += self.license_template(file_type, matcher)
-            pos += len(matcher.group("license"))
+        if code == 0:
+            logging.info(message)
         else:
-            new_content += self.license_template(file_type)
-        with open(filename) as f:
-            content = f.read()
-        with open(outfile if outfile is not None else filename, "w") as f:
-            f.write(new_content + content[pos:])
+            if outfile is None:
+                logging.warning("Fixing file %s in place ..." % filename)
+            else:
+                logging.warning("Fixing file %s, writing result to %s ..." % (filename, outfile))
+            new_content = ""
+            pos = 0
+            if matcher and matcher.groupdict().get("shebang"):
+                new_content += matcher.group("shebang")
+                pos += len(matcher.group("shebang"))
+            if matcher and matcher.groupdict().get("license"):
+                new_content += self.license_template(file_type, matcher)
+                pos += len(matcher.group("license"))
+            else:
+                new_content += self.license_template(file_type)
+            with open(filename) as f:
+                content = f.read()
+            with open(outfile if outfile is not None else filename, "w") as f:
+                f.write(new_content + content[pos:])
         return None
 
     def check_file(self, filename, fix=False, outfile=None):
@@ -267,7 +274,7 @@ class LicenseCheck(object):
             result = re.search(pattern, content)
         if result and result.groupdict().get("license"):
             logging.debug("Discovered groups: %s" % str(result.groupdict()))
-            if result.groupdict().get("end_year") and result.group("end_year") != str(self.config["end_year"]):
+            if result.groupdict().get("end_year") and result.group("end_year") != str(self.config["end_year"]) and not self.config["ignore_year"]:
                 return self.fix_or_report(1, "License is detected, but copyright year is not up to date: %s" % filename, file_type, result, fix, filename, outfile)
             if result.groupdict().get("owner") and result.group("owner") != self.config["owner"]:
                 return self.fix_or_report(1, "License is detected, but copyright owner is not current: %s" % filename, file_type, result, fix, filename, outfile)
@@ -290,6 +297,7 @@ if __name__ == "__main__":
     parser.add_argument('--add-exclude', metavar='add_exclude', help='additional filename exclusion patterns, comma-separated')
     parser.add_argument('--start-year', metavar='start_year', type=int, help='start year to use when new header is added (defaults to current year)')
     parser.add_argument('--end-year', metavar='end_year', type=int, help='end year to use (defaults to current year)')
+    parser.add_argument('--ignore-year', action='store_true', help='ignore existing copyright year(s), only validate/fix license header wording')
     parser.add_argument('scan_target', nargs='*', default=os.path.curdir, help='directories and individual files to scan (defaults to current directory)')
     args = parser.parse_args()
     if args.log_level == "warn":
@@ -302,7 +310,7 @@ if __name__ == "__main__":
         log_level = logging.INFO
     logging.basicConfig(format="[%(levelname)s] %(message)s", level=log_level)
     license_check = LicenseCheck(config_override=args.config, add_exclude_cli=args.add_exclude,
-        start_year=args.start_year, end_year=args.end_year)
+        start_year=args.start_year, end_year=args.end_year, ignore_year=args.ignore_year)
     result = license_check.check(args.scan_target, fix=args.fix)
     if not args.fix:
         success = len(list(filter(lambda x: x.code == 0, result)))
@@ -310,11 +318,11 @@ if __name__ == "__main__":
         if total > 0:
             logging.info("License headers score: %d%%" % (100.0 * success / total))
         else:
-            logging.warning("No files were scanned")
+            logging.info("No files were scanned")
         if success < total:
-            logging.warning("Not all files have proper license headers. You may fix them by running:")
-            logging.warning("")
-            logging.warning("    docker run -it --rm -v $(pwd):/github/workspace artifactory.algol60.net/csm-docker/stable/license-checker --fix %s" % " ".join(args.scan_target))
-            logging.warning("")
-            logging.warning("Please refer to https://github.com/Cray-HPE/license-checker for more details.")
+            logging.info("Not all files have proper license headers. You may fix them by running:")
+            logging.info("")
+            logging.info("    docker run -it --rm -v $(pwd):/github/workspace /us-docker.pkg.dev/csm-release/csm-docker/stable/license-checker --fix %s" % " ".join(args.scan_target))
+            logging.info("")
+            logging.info("Please refer to https://github.com/Cray-HPE/license-checker for more details.")
         sys.exit(1 if success < total else 0)
