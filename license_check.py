@@ -322,7 +322,7 @@ if __name__ == "__main__":
         if success < total:
             logging.info("Not all files have proper license headers. You may fix them by running:")
             logging.info("")
-            logging.info("    docker run -it --rm -v $(pwd):/github/workspace /us-docker.pkg.dev/csm-release/csm-docker/stable/license-checker --fix %s" % " ".join(args.scan_target))
+            logging.info("    docker run -it --rm -v $(pwd):/github/workspace us-docker.pkg.dev/csm-release/csm-docker/stable/license-checker --fix %s" % " ".join(args.scan_target))
             logging.info("")
             logging.info("Please refer to https://github.com/Cray-HPE/license-checker for more details.")
         sys.exit(1 if success < total else 0)
